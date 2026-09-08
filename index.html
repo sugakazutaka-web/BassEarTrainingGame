@@ -2,12 +2,29 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Electric Bass Fretboard - Training</title>
   <style>
-    :root { color-scheme: dark; font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #11100f; color: #f7eee4; }
+    :root { 
+      color-scheme: dark; 
+      font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; 
+    }
+    * { 
+      box-sizing: border-box; 
+      /* 画面全体でテキスト選択と長押しメニュー（コピー・検索等）を無効化 */
+      -webkit-touch-callout: none; 
+      -webkit-user-select: none; 
+      user-select: none; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    body { 
+      margin: 0; 
+      min-height: 100vh; 
+      display: grid; 
+      place-items: center; 
+      background: #11100f; 
+      color: #f7eee4; 
+    }
     main { width: min(1050px, 100%); padding: 28px 22px 36px; }
     h1 { margin: 0; font-size: clamp(1.4rem, 3vw, 2.1rem); letter-spacing: .02em; }
     p { color: #beb5a9; margin: 8px 0 20px; }
@@ -337,6 +354,11 @@
   </main>
 
   <script>
+    // iOSでのコンテキストメニュー表示防止
+    window.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+
     const svg = document.querySelector('#fretboard');
     const statusBox = document.querySelector('#status-box');
     const statusMessage = document.querySelector('#status-message');
@@ -872,23 +894,15 @@
       return { sequence: fallbackSeq, titleName: 'C Major Scale', displayKey: 'C Key', rootPitchIndex: 0, chordMidiNotes: [] };
     }
 
-    /* 
-      【改善ポイント】
-      問題解答時にルート音が押されていれば、そのルート音のフレットに一番近い位置の正解フレットを選択します。
-      ルート音が押されていない場合や候補が拮抗する場合は全体の平均位置で判定します。
-    */
     function findCloseFretForTarget(targetPos) {
       if (!game.target || game.target.length === 0) return targetPos;
 
       const candidates = positions.filter(pos => pos.midi === targetPos.midi);
       if (candidates.length === 0) return targetPos;
 
-      // ユーザーの回答の中からルート音（ピッチクラス一致）を探索
       const userRootAns = game.answers.find(ans => ans.midi % 12 === game.rootPitchIndex);
-      // ターゲットシーケンスの中からルート音を探索
       const targetRootPos = game.target.find(pos => pos.midi % 12 === game.rootPitchIndex);
       
-      // ルート音のフレット位置の優先順位: ユーザーが押したルート音 > 問題のターゲット内のルート音
       const refRootFret = userRootAns ? userRootAns.fret : (targetRootPos ? targetRootPos.fret : null);
       
       const avgFret = game.target.reduce((sum, pos) => sum + pos.fret, 0) / game.target.length;
@@ -919,7 +933,6 @@
       const isShowingResult = (previousPhase === 'result');
       const total = game.target.length;
 
-      // 問題タイトルエリアの更新
       const displayTitle = (game.mode === 'chord' || isShowingResult) ? game.titleName : game.displayKey;
       targetTitle.textContent = displayTitle;
 
@@ -1000,7 +1013,6 @@
     function showResult(isNewAnswer = true) {
       const correct = game.answers.every((ans, idx) => ans.midi === game.target[idx].midi);
 
-      // 新規解答時かつコード問題であれば解答数・正解数を加算してUIを更新
       if (isNewAnswer && game.mode === 'chord') {
         chordQuestionCount++;
         if (correct) {
