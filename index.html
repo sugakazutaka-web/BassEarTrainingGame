@@ -85,6 +85,7 @@
       flex-wrap: nowrap;
       align-items: center;
       padding: 4px 0;
+      position: relative; /* ポップアップメニューの基準位置 */
     }
 
     /* 「ゲームを始める」ボタンとステータス枠を同段に配置するレイアウト */
@@ -182,7 +183,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-left: auto; /* 右端に配置 */
+      margin-left: 0;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     button.settings-btn:hover {
@@ -198,60 +199,56 @@
     }
     button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
 
-    /* --- 設定メニューモーダル --- */
-    .modal-overlay {
+    /* --- 設定メニュー（設定ボタンの真下に出るポップアップ） --- */
+    .settings-popup {
       display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-    .settings-modal {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 6px;
       background: #1c1815;
       border: 1.5px solid #ffca75;
-      border-radius: 12px;
-      padding: 20px 24px;
-      width: 340px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-      display: flex;
+      border-radius: 10px;
+      padding: 14px 16px;
+      width: 300px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 1000;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
-    .settings-modal h3 {
-      margin: 0 0 4px 0;
+    .settings-popup.active {
+      display: flex;
+    }
+    .settings-popup h3 {
+      margin: 0 0 2px 0;
       color: #ffca75;
-      font-size: 1.1rem;
+      font-size: 0.98rem;
       border-bottom: 1px solid rgba(255,202,117,0.2);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
     .setting-item {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
     .setting-item label {
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: #e0d0b8;
     }
     .setting-options {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
     .setting-opt-btn {
       flex: 1;
-      padding: 8px;
+      padding: 6px;
       background: #26221f;
       color: #d0c0a8;
       border: 1px solid #55483c;
-      border-radius: 6px;
+      border-radius: 5px;
       font-weight: 700;
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       cursor: pointer;
       text-align: center;
       transition: all 0.2s;
@@ -260,21 +257,7 @@
       background: #ffca75;
       color: #17110a;
       border-color: #ffca75;
-      box-shadow: 0 2px 8px rgba(255,202,117,0.3);
-    }
-    .modal-close-row {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 4px;
-    }
-    .modal-close-btn {
-      background: #ffca75;
-      color: #17110a;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-weight: 800;
-      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255,202,117,0.3);
     }
 
     /* --- status エリア --- */
@@ -460,46 +443,43 @@
   </style>
 </head>
 <body>
-  <!-- 設定メニューモーダル -->
-  <div id="settings-modal" class="modal-overlay">
-    <div class="settings-modal">
-      <h3 id="modal-title-settings">⚙️ 設定</h3>
-      
-      <!-- English ON / OFF 設定（メニュー最上段） -->
-      <div class="setting-item">
-        <label id="label-lang-setting">English</label>
-        <div class="setting-options">
-          <button type="button" class="setting-opt-btn" id="lang-off-btn" data-lang="off">OFF (日本語)</button>
-          <button type="button" class="setting-opt-btn" id="lang-on-btn" data-lang="on">ON (English)</button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label id="label-speed-setting">問題の再生スピード</label>
-        <div class="setting-options">
-          <button type="button" class="setting-opt-btn" id="speed-slow-btn" data-speed="slow">遅い (標準)</button>
-          <button type="button" class="setting-opt-btn" id="speed-fast-btn" data-speed="fast">速い (倍速)</button>
-        </div>
-      </div>
-
-      <div class="setting-item">
-        <label id="label-sound-setting">正誤判定のサウンド</label>
-        <div class="setting-options">
-          <button type="button" class="setting-opt-btn" id="sound-exists-btn" data-sound="exists">あり（標準）</button>
-          <button type="button" class="setting-opt-btn" id="sound-none-btn" data-sound="none">なし</button>
-        </div>
-      </div>
-
-      <div class="modal-close-row">
-        <button type="button" id="modal-close-btn" class="modal-close-btn">閉じる</button>
-      </div>
-    </div>
-  </div>
-
   <div class="app-viewport-wrapper">
     <main>
       <div class="controls">
         <div class="settings-row">
+          <!-- 設定ボタン -->
+          <button id="open-settings" class="settings-btn" type="button">⚙️ 設定</button>
+
+          <!-- 設定ポップアップメニュー（設定ボタンの真下） -->
+          <div id="settings-popup" class="settings-popup">
+            <h3 id="modal-title-settings">⚙️ 設定</h3>
+            
+            <!-- English ON / OFF 設定 -->
+            <div class="setting-item">
+              <label id="label-lang-setting">English</label>
+              <div class="setting-options">
+                <button type="button" class="setting-opt-btn" id="lang-off-btn" data-lang="off">OFF (日本語)</button>
+                <button type="button" class="setting-opt-btn" id="lang-on-btn" data-lang="on">ON (English)</button>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label id="label-speed-setting">問題の再生スピード</label>
+              <div class="setting-options">
+                <button type="button" class="setting-opt-btn" id="speed-slow-btn" data-speed="slow">遅い (標準)</button>
+                <button type="button" class="setting-opt-btn" id="speed-fast-btn" data-speed="fast">速い (倍速)</button>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label id="label-sound-setting">正誤判定のサウンド</label>
+              <div class="setting-options">
+                <button type="button" class="setting-opt-btn" id="sound-exists-btn" data-sound="exists">あり（標準）</button>
+                <button type="button" class="setting-opt-btn" id="sound-none-btn" data-sound="none">なし</button>
+              </div>
+            </div>
+          </div>
+
           <div class="control-group">
             <label for="question-type" id="label-q-type">問題種別:</label>
             <select id="question-type">
@@ -524,9 +504,6 @@
               <option value="random">構成音からランダム（ルート除外）</option>
             </select>
           </div>
-
-          <!-- 設定ボタン -->
-          <button id="open-settings" class="settings-btn" type="button">⚙️ 設定</button>
         </div>
 
         <div class="top-controls">
@@ -581,9 +558,8 @@
       lastTouchEnd = now;
     }, { passive: false });
 
-    // 2本以上のマルチタッチ（ピンチ操作）以外のジェスチャーズームを無効化
     document.addEventListener('gesturestart', function(e) {
-      // ピンチジェスチャーは許可（イベントをそのまま通す）
+      // ピンチジェスチャーは許可
     });
 
     const svg = document.querySelector('#fretboard');
@@ -602,10 +578,9 @@
     const firstNoteGroup = document.querySelector('#first-note-group');
     const deckCounter = document.querySelector('#deck-counter');
 
-    // 設定メニュー関連要素
+    // 設定ポップアップメニュー関連要素
     const openSettingsBtn = document.querySelector('#open-settings');
-    const settingsModal = document.querySelector('#settings-modal');
-    const modalCloseBtn = document.querySelector('#modal-close-btn');
+    const settingsPopup = document.querySelector('#settings-popup');
     const speedSlowBtn = document.querySelector('#speed-slow-btn');
     const speedFastBtn = document.querySelector('#speed-fast-btn');
     const soundNoneBtn = document.querySelector('#sound-none-btn');
@@ -624,7 +599,6 @@
         soundLabel: "正誤判定のサウンド",
         soundExists: "あり（標準）",
         soundNone: "なし",
-        close: "閉じる",
         qType: "問題種別:",
         optChord: "コード",
         optScale: "スケール（ジャズ）",
@@ -670,7 +644,6 @@
         soundLabel: "Judgment Sound",
         soundExists: "On (Default)",
         soundNone: "None",
-        close: "Close",
         qType: "Mode:",
         optChord: "Chord",
         optScale: "Scale (Jazz)",
@@ -711,9 +684,9 @@
 
     // 設定状態の管理
     let appSettings = {
-      speed: 'slow', // 'slow' (デフォルト) / 'fast' (倍速)
-      sound: 'exists', // 'exists' (デフォルト・左側) / 'none'
-      lang: 'off'    // 'off' (デフォルト：日本語) / 'on' (English)
+      speed: 'slow',
+      sound: 'exists',
+      lang: 'off'
     };
 
     function t(key, ...args) {
@@ -738,7 +711,6 @@
       document.querySelector('#label-sound-setting').textContent = t('soundLabel');
       document.querySelector('#sound-exists-btn').textContent = t('soundExists');
       document.querySelector('#sound-none-btn').textContent = t('soundNone');
-      document.querySelector('#modal-close-btn').textContent = t('close');
       
       document.querySelector('#label-q-type').textContent = t('qType');
       questionTypeSelect.options[0].textContent = t('optChord');
@@ -802,18 +774,17 @@
       }
     }
 
-    openSettingsBtn.addEventListener('click', () => {
+    // 設定ボタンクリックでポップアップの表示・非表示を切り替え
+    openSettingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       updateSettingsUI();
-      settingsModal.classList.add('active');
+      settingsPopup.classList.toggle('active');
     });
 
-    modalCloseBtn.addEventListener('click', () => {
-      settingsModal.classList.remove('active');
-    });
-
-    settingsModal.addEventListener('click', (e) => {
-      if (e.target === settingsModal) {
-        settingsModal.classList.remove('active');
+    // ポップアップ以外をクリックした時に閉じる
+    document.addEventListener('click', (e) => {
+      if (!settingsPopup.contains(e.target) && e.target !== openSettingsBtn) {
+        settingsPopup.classList.remove('active');
       }
     });
 
@@ -849,7 +820,6 @@
       updateSettingsUI();
     });
 
-    // スピードに応じたウェイト・インターバル取得ヘルパー
     function getAdjustedTime(baseMs) {
       return appSettings.speed === 'fast' ? baseMs / 2 : baseMs;
     }
@@ -990,7 +960,6 @@
       updateDeckCounterDisplay();
     }
 
-    // 問題種別切り替え時の処理
     questionTypeSelect.addEventListener('change', () => {
       clearBoardMarks();
       chordQuestionCount = 0;
@@ -1092,7 +1061,6 @@
       return () => {};
     }
 
-    // 正誤判定サウンド再生機能
     function playJudgmentSound(isCorrect) {
       if (appSettings.sound !== 'exists') return;
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
@@ -1765,7 +1733,6 @@
       }
     });
 
-    // フレットボード描画（0〜15フレット）
     svg.append(node('rect', { x: x0, y: y0, width: boardWidth, height: boardHeight, fill: '#4c2d20' }));
     for (let fret = 0; fret <= frets; fret++) {
       const x = fretX(fret);
@@ -1774,7 +1741,6 @@
       number.textContent = fret;
       svg.append(number);
     }
-    // ドットインレイ配置
     [3, 5, 7, 9, 15].forEach(fret => svg.append(node('circle', { cx: (fretX(fret - 1) + fretX(fret)) / 2, cy: 166, r: 7, fill: '#e8c792' })));
     [116, 226].forEach(y => svg.append(node('circle', { cx: (fretX(11) + fretX(12)) / 2, cy: y, r: 7, fill: '#e8c792' })));
 
