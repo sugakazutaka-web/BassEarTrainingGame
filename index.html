@@ -24,24 +24,25 @@
     }
     * { 
       box-sizing: border-box; 
-      /* 画面全体でテキスト選択と長押しメニュー（コピー・検索等）・ルーペ表示を無効化 */
+      /* 画面全体でテキスト選択と長押しメニュー・ルーペ表示を無効化 */
       -webkit-touch-callout: none; 
       -webkit-user-select: none; 
       user-select: none; 
       -webkit-tap-highlight-color: transparent; 
     }
 
-    /* iPhone等の縦画面起動時に全画面横向きに回転・フィットさせるラッパー */
+    /* iPhone等の端末画面で横向き全画面表示を実現するビューポートラッパー */
     .app-viewport-wrapper {
       width: 100vw;
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: auto;
+      overflow: hidden;
+      touch-action: pinch-zoom;
     }
 
-    /* 縦画面（Portrait）時の横向き回転処理 */
+    /* 縦画面（Portrait）起動時に強制的に横向き回転・全画面フィット */
     @media screen and (orientation: portrait) {
       .app-viewport-wrapper {
         width: 100vh;
@@ -58,23 +59,29 @@
       color: #f7eee4; 
     }
     main { 
-      width: min(1050px, 100%); 
-      padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      /* 画面全体にフレットボードが含まれるよう、100%幅で自動縮小フィット */
+      width: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       margin: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    h1 { margin: 0; font-size: clamp(1.2rem, 2.5vw, 1.6rem); letter-spacing: .02em; }
-    p { color: #beb5a9; margin: 4px 0 10px; font-size: 0.85rem; line-height: 1.3; }
+    h1 { margin: 0; font-size: clamp(1.0rem, 2vw, 1.4rem); letter-spacing: .02em; }
+    p { color: #beb5a9; margin: 2px 0 6px; font-size: 0.78rem; line-height: 1.2; }
 
     /* コントロールエリアのレイアウト */
     .controls {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin: 0 0 10px;
+      gap: 6px;
+      margin: 0 0 6px;
     }
     .settings-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -82,33 +89,33 @@
     /* 「ゲームを始める」ボタンとステータス枠を同段に配置するレイアウト */
     .top-controls {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
       width: 100%;
     }
     .action-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       flex-shrink: 0;
     }
 
-    .control-group { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.88rem; }
+    .control-group { display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 0.82rem; }
     select { 
       appearance: none; 
       background: #26221f; 
       color: #ffca75; 
       border: 1px solid #ffca75; 
       border-radius: 6px; 
-      padding: 5px 26px 5px 10px; 
+      padding: 4px 22px 4px 8px; 
       font: inherit; 
       font-weight: 700; 
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       cursor: pointer; 
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffca75'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); 
       background-repeat: no-repeat; 
-      background-position: right 6px center; 
-      background-size: 16px; 
+      background-position: right 4px center; 
+      background-size: 14px; 
     }
     
     /* ベースボタン */
@@ -116,7 +123,7 @@
       appearance: none; 
       border: 1px solid #ffca75; 
       border-radius: 6px; 
-      padding: 6px 12px; 
+      padding: 5px 10px; 
       color: #17110a; 
       background: #ffca75; 
       font: inherit; 
@@ -132,8 +139,8 @@
       background: linear-gradient(135deg, #ffb300, #ff8f00);
       border: 1px solid #ffcc80;
       color: #0d0905;
-      font-size: 0.95rem;
-      padding: 8px 16px;
+      font-size: 0.85rem;
+      padding: 6px 12px;
       box-shadow: 0 3px 12px rgba(255, 143, 0, 0.45);
       letter-spacing: 0.03em;
     }
@@ -148,8 +155,8 @@
       color: #17110a; 
       background: #e0a953; 
       border: 1px solid #ffca75;
-      padding: 8px 12px;
-      font-size: 0.88rem;
+      padding: 6px 10px;
+      font-size: 0.8rem;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     button.secondary:hover:not(:disabled) {
@@ -158,8 +165,8 @@
     }
 
     button.small-btn {
-      padding: 4px 8px;
-      font-size: 0.78rem;
+      padding: 3px 6px;
+      font-size: 0.72rem;
       border-radius: 5px;
       white-space: nowrap;
       flex-shrink: 0;
@@ -175,7 +182,7 @@
       min-width: 0;
     }
     #level-indicator {
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: #ffca75;
       padding-left: 2px;
@@ -186,14 +193,14 @@
     }
     #status-box {
       width: 100%;
-      min-height: 48px;
-      padding: 4px 8px;
+      min-height: 40px;
+      padding: 3px 6px;
       border-radius: 8px;
       background: rgba(255, 202, 117, 0.05);
       border: 1.5px solid rgba(255, 202, 117, 0.25);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
@@ -235,9 +242,9 @@
 
     .status-title-card {
       flex: 0 1 auto;
-      min-width: 120px;
-      min-height: 38px;
-      padding: 4px 10px;
+      min-width: 90px;
+      min-height: 32px;
+      padding: 2px 8px;
       border-radius: 6px;
       background: rgba(255, 202, 117, 0.08);
       border: 1px solid rgba(255, 202, 117, 0.2);
@@ -248,7 +255,7 @@
       transition: all 0.3s ease;
     }
     .status-label {
-      font-size: 0.62rem;
+      font-size: 0.58rem;
       font-weight: 700;
       color: #beb5a9;
       letter-spacing: 0.05em;
@@ -257,7 +264,7 @@
       line-height: 1;
     }
     #target-title {
-      font-size: 0.92rem;
+      font-size: 0.82rem;
       font-weight: 900;
       color: #ffca75;
       line-height: 1.2;
@@ -267,20 +274,20 @@
 
     .status-message-card {
       flex: 1;
-      min-height: 38px;
-      padding: 4px 10px;
+      min-height: 32px;
+      padding: 2px 8px;
       border-radius: 6px;
       background: rgba(255, 202, 117, 0.04);
       border: 1px solid rgba(255, 202, 117, 0.15);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.3s ease;
       min-width: 0;
     }
     #status-message {
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: #ffe3b3;
       line-height: 1.2;
@@ -289,46 +296,21 @@
       text-overflow: ellipsis;
     }
 
-    @media (max-width: 768px) {
-      .top-controls {
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
-      }
-      .action-row {
-        width: auto;
-        gap: 4px;
-      }
-      button.primary-btn {
-        font-size: 0.82rem;
-        padding: 6px 10px;
-      }
-      button.secondary {
-        font-size: 0.78rem;
-        padding: 6px 8px;
-      }
-      #status-box {
-        flex-direction: row;
-        padding: 3px 6px;
-        gap: 4px;
-      }
-      .status-title-card {
-        min-width: 85px;
-        padding: 3px 6px;
-      }
-      #target-title {
-        font-size: 0.8rem;
-      }
-      .status-message-card {
-        padding: 3px 6px;
-      }
-      #status-message {
-        font-size: 0.75rem;
-      }
+    .board-shell { 
+      width: 100%;
+      overflow: hidden; 
+      border-radius: 10px; 
+      box-shadow: 0 12px 30px #0008; 
+      touch-action: pinch-zoom;
     }
-
-    .board-shell { overflow-x: auto; border-radius: 10px; box-shadow: 0 16px 40px #0008; }
-    #fretboard { display: block; min-width: 900px; width: 100%; height: auto; background: #372018; touch-action: pinch-zoom; }
+    /* フレットボード全体が横幅いっぱいに収まるようレスポンシブ化 */
+    #fretboard { 
+      display: block; 
+      width: 100%; 
+      height: auto; 
+      background: #372018; 
+      touch-action: pinch-zoom; 
+    }
     .cell { cursor: pointer; }
     .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
@@ -353,10 +335,10 @@
     .note { fill: #f6e7d0; font-size: 12px; font-weight: 750; text-anchor: middle; pointer-events: none; }
     .string-name { fill: #f6e7d0; font-size: 16px; font-weight: 800; text-anchor: end; }
     .fret-number { fill: #d0b7a1; font-size: 14px; text-anchor: middle; }
-    .hint { margin-top: 8px; font-size: .82rem; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-    .hint-left { display: flex; gap: 12px; align-items: center; }
-    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
+    .hint { margin-top: 6px; font-size: .75rem; display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .hint-left { display: flex; gap: 8px; align-items: center; }
+    .legend-item { display: inline-flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
     
     /* 進捗 / カウンター表示用スタイル */
     #deck-counter {
@@ -364,9 +346,9 @@
       color: #ffca75;
       background: rgba(255, 202, 117, 0.12);
       border: 1px solid rgba(255, 202, 117, 0.3);
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: 5px;
-      font-size: 0.85rem;
+      font-size: 0.78rem;
       letter-spacing: 0.05em;
     }
   </style>
@@ -448,7 +430,7 @@
       e.preventDefault();
     }, { passive: false });
 
-    // iOS Safariでのダブルタップによる拡大（ズーム）を無効化し、ピンチ操作のみ許可
+    // 2本指によるピンチ操作以外の1本指ダブルタップズームやスクロールを制限
     let lastTouchEnd = 0;
     document.addEventListener('touchend', function(event) {
       const now = (new Date()).getTime();
@@ -1256,7 +1238,6 @@
       }
     }
 
-    // ハイライト保持・切り替え制御用変数
     let currentHeldPosition = null;
 
     function startHeldNote(position) {
@@ -1356,7 +1337,6 @@
       name.textContent = string.label;
       svg.append(name);
       
-      // 開放弦(0フレット)から全15フレットまで同様に定義
       for (let fret = 0; fret <= frets; fret++) {
         const left = fret === 0 ? x0 - 74 : fretX(fret - 1);
         const right = fretX(fret);
@@ -1376,7 +1356,6 @@
         };
         positions.push(position);
         
-        // タッチ(指)での入力イベント処理
         cell.addEventListener('pointerdown', event => {
           if (game.phase === 'playing') return;
           event.preventDefault();
@@ -1385,14 +1364,10 @@
             cell.setPointerCapture(event.pointerId);
           } catch (e) {}
 
-          // 回答選択処理（問題解法フェーズのみ動作）
           choose(position, false);
-
-          // タッチ開始時に手動リリース用の音・ハイライト再生
           startHeldNote(position);
         });
 
-        // 指を離した時・領域外に出た時・キャンセルの処理
         const handlePointerUp = event => {
           try {
             if (cell.hasPointerCapture && cell.hasPointerCapture(event.pointerId)) {
