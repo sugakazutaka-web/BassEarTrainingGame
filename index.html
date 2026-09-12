@@ -13,9 +13,9 @@
     html, body {
       /* ピンチ操作（拡大・縮小）のみ許可 */
       touch-action: pinch-zoom;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
       -webkit-text-size-adjust: 100%;
       margin: 0;
       padding: 0;
@@ -27,10 +27,10 @@
 
     * { 
       box-sizing: border-box; 
-      /* 画面全体でテキスト選択と長押しメニュー・ルーペ表示を無効化 */
-      -webkit-touch-callout: none; 
-      -webkit-user-select: none; 
-      user-select: none; 
+      /* 画面全体でテキスト選択と長押しメニュー・ルーペ表示を完全に無効化 */
+      -webkit-touch-callout: none !important; 
+      -webkit-user-select: none !important; 
+      user-select: none !important; 
       -webkit-tap-highlight-color: transparent; 
     }
 
@@ -42,6 +42,7 @@
       justify-content: flex-start; /* 左端を固定 */
       align-items: flex-start;
       overflow: auto;
+      -webkit-touch-callout: none !important;
     }
 
     /* 
@@ -391,6 +392,7 @@
       width: 900px;
       min-width: 900px;
       margin: 0; /* 左寄せに変更 */
+      -webkit-touch-callout: none !important;
     }
     #fretboard { 
       display: block; 
@@ -398,9 +400,10 @@
       height: 300px; 
       background: #372018; 
       touch-action: pinch-zoom; 
+      -webkit-touch-callout: none !important;
     }
 
-    .cell { cursor: pointer; }
+    .cell { cursor: pointer; -webkit-touch-callout: none !important; }
     .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
     .cell.playing rect { fill: #ffbd3f8c !important; }
