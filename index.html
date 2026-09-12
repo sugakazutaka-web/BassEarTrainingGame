@@ -130,7 +130,7 @@
     }
     button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
 
-    /* --- status エリア（右側配置用に最適化） --- */
+    /* --- status エリア --- */
     .status-container {
       flex: 1;
       display: flex;
@@ -197,7 +197,6 @@
       100% { transform: scale(1); }
     }
 
-    /* 分割枠1: コード名 / スケール名用カード */
     .status-title-card {
       flex: 0 1 auto;
       min-width: 120px;
@@ -230,7 +229,6 @@
       word-break: break-word;
     }
 
-    /* 分割枠2: メッセージ・進捗表示用カード */
     .status-message-card {
       flex: 1;
       min-height: 38px;
@@ -255,7 +253,6 @@
       text-overflow: ellipsis;
     }
 
-    /* モバイル・iPhone向け調整 */
     @media (max-width: 768px) {
       .top-controls {
         flex-direction: row;
@@ -300,7 +297,7 @@
     .cell rect { fill: transparent; transition: fill .1s ease; }
     .cell:hover rect, .cell:focus rect { fill: #ffd27430; outline: none; }
     .cell:focus { outline: none; }
-    .cell.playing rect { fill: #ffbd3f8c; }
+    .cell.playing rect { fill: #ffbd3f8c !important; }
     .cell.playing-correct rect { fill: #87e39ab3 !important; stroke: #87e39a; stroke-width: 2px; }
     .cell.playing-wrong rect { fill: #f27e72b3 !important; stroke: #f27e72; stroke-width: 2px; }
     .cell.computer-first rect { fill: #ffca754f; stroke: #ffca75; stroke-width: 3; }
@@ -345,7 +342,6 @@
     <p id="description-text">モードを選択して「ゲームを始める」を押してください。</p>
     
     <div class="controls">
-      <!-- 上段: 設定項目 -->
       <div class="settings-row">
         <div class="control-group">
           <label for="question-type">問題種別:</label>
@@ -373,7 +369,6 @@
         </div>
       </div>
 
-      <!-- 下段: アクションボタン & ステータス枠 (同段配置) -->
       <div class="top-controls">
         <div class="action-row">
           <button id="start" class="primary-btn" type="button">▶ ゲームを始める</button>
@@ -383,15 +378,12 @@
         <div class="status-container">
           <div id="level-indicator"></div>
           
-          <!-- 左右分割レイアウト -->
           <div id="status-box" aria-live="polite">
-            <!-- 左側枠: コード名 / スケール名 -->
             <div class="status-title-card">
               <div class="status-label" id="target-label">CHORD / SCALE</div>
               <div id="target-title">---</div>
             </div>
 
-            <!-- 右側枠: メッセージ・進捗表示用カード -->
             <div class="status-message-card">
               <span id="status-message">「ゲームを始める」を押してください</span>
               <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
@@ -445,7 +437,6 @@
     ];
     const pitchNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     
-    // 基礎コード・7th
     const basicChordDefinitions = [
       { name: '', intervals: [0, 4, 7], isTension: false },
       { name: 'm', intervals: [0, 3, 7], isTension: false },
@@ -458,7 +449,6 @@
       { name: 'sus4', intervals: [0, 5, 7], isTension: false }
     ];
 
-    // テンションコード
     const tensionChordDefinitions = [
       { name: '9', intervals: [0, 4, 7, 10, 14], isTension: true },
       { name: 'm9', intervals: [0, 3, 7, 10, 14], isTension: true },
@@ -474,7 +464,6 @@
       { name: '6/9', intervals: [0, 4, 7, 9, 14], isTension: true }
     ];
 
-    // ジャズスケール定義
     const jazzScaleDefinitions = [
       { name: 'Major Scale', intervals: [0, 2, 4, 5, 7, 9, 11, 12] },
       { name: 'Dorian Scale', intervals: [0, 2, 3, 5, 7, 9, 10, 12] },
@@ -597,7 +586,6 @@
     function fretX(fret) { return x0 + boardWidth * (1 - Math.pow(0.965, fret) ) / (1 - Math.pow(0.965, frets)); }
     function noteName(midi) { return pitchNames[midi % 12] + (Math.floor(midi / 12) - 1); }
     
-    /* 単音再生 */
     function play(midi, sustain = 0.56, volume = 0.35) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const now = audioContext.currentTime;
@@ -669,7 +657,6 @@
       return () => {};
     }
 
-    /* アルペジオ／コード用単音再生 */
     function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.28) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
@@ -726,7 +713,6 @@
       oscSub.stop(startTime + duration + 0.02);
     }
 
-    /* コード全音再生 */
     function playChord(midiNotes) {
       if (!midiNotes || midiNotes.length === 0) return;
       const sortedMidis = [...midiNotes].sort((a, b) => a - b);
@@ -767,7 +753,6 @@
 
     playChordBtn.addEventListener('click', playChordArpeggio);
 
-    // 連続タップ時のハイライト残り防止用変数
     let lastPlayingCell = null;
     let playingTimeoutId = null;
 
@@ -1227,10 +1212,11 @@
       }
     }
 
-    // iOS連打時のハイライト残り防止用変数および関数
+    // ハイライト保持・切り替え制御用変数
     let currentHeldPosition = null;
 
     function startHeldNote(position) {
+      // 次のフレットがタッチされた瞬間に前にタッチされたフレットのハイライトと音を停止
       if (currentHeldPosition && currentHeldPosition !== position) {
         stopHeldNote(currentHeldPosition);
       }
@@ -1242,6 +1228,7 @@
     }
 
     function stopHeldNote(position) {
+      if (!position) return;
       position.stopHeld?.();
       position.stopHeld = null;
       position.cell.classList.remove('playing');
@@ -1289,7 +1276,7 @@
       }
     });
 
-    // フレットボード描画（15フレット仕様）
+    // フレットボード描画（0〜15フレット）
     svg.append(node('rect', { x: x0, y: y0, width: boardWidth, height: boardHeight, fill: '#4c2d20' }));
     for (let fret = 0; fret <= frets; fret++) {
       const x = fretX(fret);
@@ -1311,6 +1298,8 @@
       const name = node('text', { x: 66, y: y + 5, class: 'string-name' });
       name.textContent = string.label;
       svg.append(name);
+      
+      // 開放弦(0フレット)から全15フレットまで同様に定義
       for (let fret = 0; fret <= frets; fret++) {
         const left = fret === 0 ? x0 - 74 : fretX(fret - 1);
         const right = fretX(fret);
@@ -1330,16 +1319,23 @@
         };
         positions.push(position);
         
-        // pointerdown 時に setPointerCapture を行わないイベントハンドラ
+        // タッチ(指)での入力イベント処理
         cell.addEventListener('pointerdown', event => {
           if (game.phase === 'playing') return;
           event.preventDefault();
+          
+          // 回答選択処理（問題解法フェーズ）
           choose(position, false);
+
+          // 新しいフレットが押された瞬間にハイライトを表示し、直前に押していたフレットのハイライトをオフ
           startHeldNote(position);
         });
+
+        // 指を離した時・領域外に出た時・キャンセルの処理
         cell.addEventListener('pointerup', () => stopHeldNote(position));
+        cell.addEventListener('pointerleave', () => stopHeldNote(position));
         cell.addEventListener('pointercancel', () => stopHeldNote(position));
-        cell.addEventListener('lostpointercapture', () => stopHeldNote(position));
+        
         cell.addEventListener('keydown', event => { 
           if (event.key === 'Enter' || event.key === ' ') { 
             event.preventDefault(); 
@@ -1350,7 +1346,6 @@
       }
     });
 
-    // 初期化処理
     updateUIControls();
   </script>
 </body>
