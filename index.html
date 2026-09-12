@@ -1222,7 +1222,7 @@
         lastPlayingCell = null;
       }
 
-      // 別のフレットが押された場合は前のフレットを消灯・消音
+      // 別のフレットが押された場合は前のフレットを消音
       if (currentHeldPosition && currentHeldPosition !== position) {
         stopHeldNote(currentHeldPosition);
       }
@@ -1231,7 +1231,12 @@
       position.stopHeld?.();
       // sustain に null を渡すことで指を離すまで持続発音
       position.stopHeld = play(position.midi, null);
-      position.cell.classList.add('playing');
+      
+      // 回答時（guess）のみフレットボードのハイライトを付ける
+      if (game.phase === 'guess') {
+        position.cell.classList.add('playing');
+      }
+      
       setStatus(null, `${position.string.name} 弦・${position.fret} フレット — ${noteName(position.midi)}`);
     }
 
@@ -1336,7 +1341,7 @@
             cell.setPointerCapture(event.pointerId);
           } catch (e) {}
 
-          // 回答選択処理（問題解法フェーズ）
+          // 回答選択処理（問題解法フェーズのみ動作）
           choose(position, false);
 
           // タッチ開始時に手動リリース用の音・ハイライト再生
