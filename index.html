@@ -248,16 +248,14 @@
     .cell.correct rect { fill: #87e39a85 !important; stroke: #87e39a; stroke-width: 1.5px; }
     .cell.wrong rect { fill: #f27e7285 !important; stroke: #f27e72; stroke-width: 1.5px; }
     
+    /* [軽量化改修] ルート音マーカー: 無制限のCSS無限アニメーション(pulse)を停止 */
     .root-marker {
       fill: #ff4d4d33;
       stroke: #ff4d4d;
       stroke-width: 2.5;
       pointer-events: none;
-      animation: pulse-root 1.8s infinite alternate ease-in-out;
-    }
-    @keyframes pulse-root {
-      0% { stroke-opacity: 0.6; fill-opacity: 0.15; }
-      100% { stroke-opacity: 1; fill-opacity: 0.35; }
+      stroke-opacity: 0.9;
+      fill-opacity: 0.25;
     }
 
     .note { fill: #f6e7d0; font-size: 12px; font-weight: 750; text-anchor: middle; pointer-events: none; }
@@ -436,8 +434,8 @@
 
     let scaleDeck = [];
     let currentScaleIndex = 0;
-    let chordQuestionCount = 0; // コード問題の解答数
-    let chordCorrectCount = 0;  // コード問題の正解数
+    let chordQuestionCount = 0;
+    let chordCorrectCount = 0;
 
     function resetScaleDeck() {
       scaleDeck = [];
@@ -535,106 +533,58 @@
     function fretX(fret) { return x0 + boardWidth * (1 - Math.pow(0.965, fret) ) / (1 - Math.pow(0.965, frets)); }
     function noteName(midi) { return pitchNames[midi % 12] + (Math.floor(midi / 12) - 1); }
     
-    /* エレクトリックベース音の再生 */
+    /* [軽量化改修] ベース音および単音再生：シンプルなサイン波による発音（オシレーター1基のみ） */
     function play(midi, sustain = 0.56, volume = 0.28) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const now = audioContext.currentTime;
       const frequency = 440 * Math.pow(2, (midi - 69) / 12);
+      
       const osc = audioContext.createOscillator();
-      const overtone = audioContext.createOscillator();
       const gain = audioContext.createGain();
-      const overtoneGain = audioContext.createGain();
-      osc.type = 'triangle'; overtone.type = 'sine';
+      
+      osc.type = 'sine'; // サイン波でシンプルな発音
       osc.frequency.setValueAtTime(frequency, now);
-      overtone.frequency.setValueAtTime(frequency * 2, now);
+      
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(volume, now + 0.018);
-      overtoneGain.gain.setValueAtTime(volume * 0.18, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+      
       osc.connect(gain).connect(audioContext.destination);
-      overtone.connect(overtoneGain).connect(audioContext.destination);
-      osc.start(now); overtone.start(now);
+      osc.start(now);
+      
       if (sustain === null) {
         return () => {
           const releaseAt = audioContext.currentTime;
           gain.gain.cancelScheduledValues(releaseAt);
           gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), releaseAt);
-          gain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.14);
-          overtoneGain.gain.cancelScheduledValues(releaseAt);
-          overtoneGain.gain.setValueAtTime(Math.max(overtoneGain.gain.value, 0.0001), releaseAt);
-          overtoneGain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.09);
-          osc.stop(releaseAt + 0.16);
-          overtone.stop(releaseAt + 0.11);
+          gain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.1);
+          osc.stop(releaseAt + 0.12);
         };
       }
+      
       gain.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + Math.min(sustain * 0.5, 0.55));
-      osc.stop(now + sustain + .04); overtone.stop(now + Math.min(sustain * 0.5, 0.55) + .04);
+      osc.stop(now + sustain + 0.02);
       return () => {};
     }
 
-    /* クラシックギターの1音を発音 */
-    function playClassicalGuitarNote(midi, startTime, duration = 3.2, volume = 0.28) {
+    /* [軽量化改修] 「コードを鳴らす」用：サイン波による軽量な発音処理 */
+    function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.22) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
 
-      const osc1 = audioContext.createOscillator();
-      osc1.type = 'triangle';
-      osc1.frequency.setValueAtTime(freq, startTime);
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
 
-      const osc2 = audioContext.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(freq * 2.0, startTime);
+      osc.type = 'sine'; // サイン波に変更してノイズ生成や複雑なフィルター処理を排除
+      osc.frequency.setValueAtTime(freq, startTime);
 
-      const bufferSize = audioContext.sampleRate * 0.03;
-      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-      const noise = audioContext.createBufferSource();
-      noise.buffer = noiseBuffer;
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
-      const noiseFilter = audioContext.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(Math.min(freq * 1.5, 1200), startTime);
-      noiseFilter.Q.setValueAtTime(1.5, startTime);
+      osc.connect(gain).connect(audioContext.destination);
 
-      const noiseGain = audioContext.createGain();
-      noiseGain.gain.setValueAtTime(volume * 0.35, startTime);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.025);
-
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-
-      const bodyFilter = audioContext.createBiquadFilter();
-      bodyFilter.type = 'lowpass';
-      bodyFilter.frequency.setValueAtTime(Math.min(freq * 3.5, 2800), startTime);
-      bodyFilter.frequency.exponentialRampToValueAtTime(Math.min(freq * 1.8, 1200), startTime + 0.12);
-
-      const mainGain = audioContext.createGain();
-      const overtoneGain = audioContext.createGain();
-
-      mainGain.gain.setValueAtTime(0.0001, startTime);
-      mainGain.gain.linearRampToValueAtTime(volume, startTime + 0.015);
-      mainGain.gain.exponentialRampToValueAtTime(volume * 0.3, startTime + 0.35);
-      mainGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-      overtoneGain.gain.setValueAtTime(0.0001, startTime);
-      overtoneGain.gain.linearRampToValueAtTime(volume * 0.45, startTime + 0.015);
-      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.25);
-
-      osc1.connect(mainGain).connect(bodyFilter);
-      osc2.connect(overtoneGain).connect(bodyFilter);
-      noiseGain.connect(bodyFilter);
-      bodyFilter.connect(audioContext.destination);
-
-      osc1.start(startTime);
-      osc2.start(startTime);
-      noise.start(startTime);
-
-      osc1.stop(startTime + duration + 0.05);
-      osc2.stop(startTime + duration + 0.05);
-      noise.stop(startTime + 0.03);
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.02);
     }
 
     /* コード全音再生（ルート音を強調＆長めに鳴らす） */
@@ -645,10 +595,10 @@
       sortedMidis.forEach((midi, idx) => {
         const isRoot = (midi % 12 === game.rootPitchIndex);
         if (isRoot) {
-          play(midi, 3.0, 0.35);
+          play(midi, 2.5, 0.35);
         } else {
           setTimeout(() => {
-            play(midi, 1.6, 0.18);
+            play(midi, 1.4, 0.20);
           }, idx * 45);
         }
       });
@@ -662,15 +612,15 @@
       const sortedMidis = [...game.chordMidiNotes].sort((a, b) => a - b);
 
       const intervalMs = 280;
-      const sustainTime = 3.2;
+      const sustainTime = 2.0;
       const startTime = audioContext.currentTime;
 
       sortedMidis.forEach((midi, index) => {
         const noteStartTime = startTime + (index * intervalMs / 1000);
-        playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.26);
+        playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.22);
       });
 
-      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + 1800;
+      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + 1200;
       await wait(totalWaitMs);
 
       playChordBtn.disabled = false;
