@@ -1193,9 +1193,6 @@
 
     function choose(position, shouldPreview = true) {
       if (game.phase !== 'guess') {
-        if (shouldPreview && (game.phase === 'idle' || game.phase === 'result')) {
-          preview(position.cell, position.string, position.fret);
-        }
         return;
       }
       
@@ -1223,8 +1220,10 @@
       currentHeldPosition = position;
 
       position.stopHeld?.();
+      // sustain に null を渡すことで、指を離すまで持続して発音
       position.stopHeld = play(position.midi, null);
       position.cell.classList.add('playing');
+      setStatus(null, `${position.string.name} 弦・${position.fret} フレット — ${noteName(position.midi)}`);
     }
 
     function stopHeldNote(position) {
@@ -1324,17 +1323,30 @@
           if (game.phase === 'playing') return;
           event.preventDefault();
           
+          try {
+            cell.setPointerCapture(event.pointerId);
+          } catch (e) {}
+
           // 回答選択処理（問題解法フェーズ）
           choose(position, false);
 
-          // 新しいフレットが押された瞬間にハイライトを表示し、直前に押していたフレットのハイライトをオフ
+          // タッチ開始時に手動リリース用の音・ハイライト再生
           startHeldNote(position);
         });
 
         // 指を離した時・領域外に出た時・キャンセルの処理
-        cell.addEventListener('pointerup', () => stopHeldNote(position));
-        cell.addEventListener('pointerleave', () => stopHeldNote(position));
-        cell.addEventListener('pointercancel', () => stopHeldNote(position));
+        const handlePointerUp = event => {
+          try {
+            if (cell.hasPointerCapture && cell.hasPointerCapture(event.pointerId)) {
+              cell.releasePointerCapture(event.pointerId);
+            }
+          } catch (e) {}
+          stopHeldNote(position);
+        };
+
+        cell.addEventListener('pointerup', handlePointerUp);
+        cell.addEventListener('pointerleave', handlePointerUp);
+        cell.addEventListener('pointercancel', handlePointerUp);
         
         cell.addEventListener('keydown', event => { 
           if (event.key === 'Enter' || event.key === ' ') { 
