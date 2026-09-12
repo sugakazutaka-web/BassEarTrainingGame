@@ -2,16 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Electric Bass Fretboard - Training</title>
   <style>
     :root { 
       color-scheme: dark; 
       font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; 
     }
+    html, body {
+      /* 画面全体のダブルタップ拡大・ピンチ操作を防止 */
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
     * { 
       box-sizing: border-box; 
-      /* 画面全体でテキスト選択と長押しメニュー（コピー・検索等）を無効化 */
+      /* 画面全体でテキスト選択と長押しメニュー（コピー・検索等）・ルーペ表示を無効化 */
       -webkit-touch-callout: none; 
       -webkit-user-select: none; 
       user-select: none; 
@@ -405,9 +412,24 @@
   </main>
 
   <script>
-    // iOSでのコンテキストメニュー表示防止
+    // iOS Safariでのコンテキストメニュー・長押しルーペ表示防止
     window.addEventListener('contextmenu', function(e) {
       e.preventDefault();
+    }, { passive: false });
+
+    // iOS Safariでのダブルタップによる拡大（ズーム）を無効化
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    // 2本指以上でのピンチイン・ピンチアウト拡大を無効化
+    document.addEventListener('gesturestart', function(event) {
+      event.preventDefault();
     }, { passive: false });
 
     const svg = document.querySelector('#fretboard');
@@ -1212,7 +1234,6 @@
     let currentHeldPosition = null;
 
     function startHeldNote(position) {
-      // preview等のタイマー発火が残っていれば解除
       if (playingTimeoutId) {
         clearTimeout(playingTimeoutId);
         playingTimeoutId = null;
@@ -1222,17 +1243,14 @@
         lastPlayingCell = null;
       }
 
-      // 別のフレットが押された場合は前のフレットを消音
       if (currentHeldPosition && currentHeldPosition !== position) {
         stopHeldNote(currentHeldPosition);
       }
       currentHeldPosition = position;
 
       position.stopHeld?.();
-      // sustain に null を渡すことで指を離すまで持続発音
       position.stopHeld = play(position.midi, null);
       
-      // 回答時（guess）のみフレットボードのハイライトを付ける
       if (game.phase === 'guess') {
         position.cell.classList.add('playing');
       }
