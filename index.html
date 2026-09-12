@@ -2,29 +2,32 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
   <title>Electric Bass Fretboard - Training</title>
   <style>
     :root { 
       color-scheme: dark; 
       font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; 
     }
+
     html, body {
       /* ピンチ操作（拡大・縮小）のみ許可 */
       touch-action: pinch-zoom;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
+      -webkit-text-size-adjust: 100%;
       margin: 0;
       padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* ピンチズーム時にスクロールできるようにする */
       background: #11100f;
     }
+
     * { 
       box-sizing: border-box; 
-      /* 画面全体でテキスト選択と長押しメニュー（コピー・検索等）・ルーペ表示を無効化 */
+      /* 画面全体でテキスト選択と長押しメニュー・ルーペ表示を無効化 */
       -webkit-touch-callout: none; 
       -webkit-user-select: none; 
       user-select: none; 
@@ -38,12 +41,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: auto;
+      overflow: visible;
     }
 
     /* 
-      iPhoneなどのモバイル端末（タッチデバイス）の縦画面（Portrait）時のみ
-      アプリ全体を横向きに回転させる設定
+      iPhoneなどのモバイル端末（タッチデバイス）の縦画面（Portrait）時
+      PCと全く同じレイアウト（1000px固定幅）のまま画面を90度回転させて表示
     */
     @media screen and (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
       .app-viewport-wrapper {
@@ -60,26 +63,26 @@
     body { 
       color: #f7eee4; 
     }
+
+    /* PCと全く同じレイアウトサイズ（1000px固定） */
     main { 
       width: 1000px;
-      max-width: 100%;
-      padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      min-width: 1000px;
+      padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       margin: auto;
     }
-    h1 { margin: 0; font-size: 1.4rem; letter-spacing: .02em; }
-    p { color: #beb5a9; margin: 4px 0 10px; font-size: 0.85rem; line-height: 1.3; }
 
     /* コントロールエリアのレイアウト */
     .controls {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin: 0 0 10px;
+      gap: 6px;
+      margin: 0 0 6px;
     }
     .settings-row {
       display: flex;
       gap: 12px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
     }
 
@@ -104,7 +107,7 @@
       color: #ffca75; 
       border: 1px solid #ffca75; 
       border-radius: 6px; 
-      padding: 5px 26px 5px 10px; 
+      padding: 4px 24px 4px 8px; 
       font: inherit; 
       font-weight: 700; 
       font-size: 0.85rem;
@@ -190,7 +193,7 @@
     }
     #status-box {
       width: 100%;
-      min-height: 48px;
+      min-height: 44px;
       padding: 4px 8px;
       border-radius: 8px;
       background: rgba(255, 202, 117, 0.05);
@@ -240,7 +243,7 @@
     .status-title-card {
       flex: 0 1 auto;
       min-width: 120px;
-      min-height: 38px;
+      min-height: 36px;
       padding: 4px 10px;
       border-radius: 6px;
       background: rgba(255, 202, 117, 0.08);
@@ -271,7 +274,7 @@
 
     .status-message-card {
       flex: 1;
-      min-height: 38px;
+      min-height: 36px;
       padding: 4px 10px;
       border-radius: 6px;
       background: rgba(255, 202, 117, 0.04);
@@ -299,7 +302,7 @@
       border-radius: 10px; 
       box-shadow: 0 16px 40px #0008; 
       width: 900px;
-      max-width: 100%;
+      min-width: 900px;
       margin: 0 auto;
     }
     #fretboard { 
@@ -334,7 +337,7 @@
     .note { fill: #f6e7d0; font-size: 12px; font-weight: 750; text-anchor: middle; pointer-events: none; }
     .string-name { fill: #f6e7d0; font-size: 16px; font-weight: 800; text-anchor: end; }
     .fret-number { fill: #d0b7a1; font-size: 14px; text-anchor: middle; }
-    .hint { margin-top: 8px; font-size: .82rem; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .hint { margin-top: 6px; font-size: .82rem; display: flex; gap: 12px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
     .hint-left { display: flex; gap: 12px; align-items: center; }
     .legend-item { display: inline-flex; align-items: center; gap: 5px; }
     .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
@@ -355,9 +358,6 @@
 <body>
   <div class="app-viewport-wrapper">
     <main>
-      <h1>Electric Bass Ear Training Game</h1>
-      <p id="description-text">モードを選択して「ゲームを始める」を押してください。</p>
-      
       <div class="controls">
         <div class="settings-row">
           <div class="control-group">
@@ -414,11 +414,10 @@
         <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
       </div>
       <div class="hint">
+        <div id="deck-counter">正解数: 0/0</div>
         <div class="hint-left">
-          <span>1オクターブ上のチューニング：E3 · A3 · D4 · G4 ／ 0〜15フレット</span>
           <span class="legend-item"><span class="legend-dot"></span> ルート音（根音）/ キー音</span>
         </div>
-        <div id="deck-counter">正解数: 0/0</div>
       </div>
     </main>
   </div>
@@ -439,6 +438,11 @@
       lastTouchEnd = now;
     }, { passive: false });
 
+    // 2本以上のマルチタッチ（ピンチ操作）以外のジェスチャーズームを無効化
+    document.addEventListener('gesturestart', function(e) {
+      // ピンチジェスチャーは許可（イベントをそのまま通す）
+    });
+
     const svg = document.querySelector('#fretboard');
     const statusBox = document.querySelector('#status-box');
     const statusMessage = document.querySelector('#status-message');
@@ -453,15 +457,14 @@
     const firstNoteModeSelect = document.querySelector('#first-note-mode');
     const noteCountGroup = document.querySelector('#note-count-group');
     const firstNoteGroup = document.querySelector('#first-note-group');
-    const descriptionText = document.querySelector('#description-text');
     const deckCounter = document.querySelector('#deck-counter');
 
     const NS = 'http://www.w3.org/2000/svg';
     const strings = [
-      { name: 'G', midi: 67, label: 'G4' },
-      { name: 'D', midi: 62, label: 'D4' },
-      { name: 'A', midi: 57, label: 'A3' },
-      { name: 'E', midi: 52, label: 'E3' }
+      { name: 'G', midi: 67, label: 'G' },
+      { name: 'D', midi: 62, label: 'D' },
+      { name: 'A', midi: 57, label: 'A' },
+      { name: 'E', midi: 52, label: 'E' }
     ];
     const pitchNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     
@@ -580,13 +583,11 @@
       if (mode === 'chord') {
         noteCountGroup.style.display = 'flex';
         firstNoteGroup.style.display = 'flex';
-        descriptionText.textContent = '最初にコード音が鳴った後、構成音が順番に再生されます。1音目の位置を手がかりに、聴こえた順にフレットを選んでください。';
         targetLabel.textContent = 'コード名';
         targetTitle.textContent = '---';
       } else {
         noteCountGroup.style.display = 'none';
         firstNoteGroup.style.display = 'none';
-        descriptionText.textContent = '最初にキー音が鳴り、続いてスケール構成音（上昇または下降）が再生されます。キー音を手がかりに、対応するフレットを順番に押してください。';
         targetLabel.textContent = 'スケール名';
         targetTitle.textContent = '---';
       }
@@ -612,7 +613,7 @@
     }
 
     function fretX(fret) { return x0 + boardWidth * (1 - Math.pow(0.965, fret) ) / (1 - Math.pow(0.965, frets)); }
-    function noteName(midi) { return pitchNames[midi % 12] + (Math.floor(midi / 12) - 1); }
+    function noteName(midi) { return pitchNames[midi % 12]; }
     
     function play(midi, sustain = 0.56, volume = 0.35) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
