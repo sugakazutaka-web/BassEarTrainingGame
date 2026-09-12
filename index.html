@@ -64,11 +64,11 @@
       color: #f7eee4; 
     }
 
-    /* PCと全く同じレイアウトサイズ（1000px固定） */
+    /* フレットボードの幅（900px）にメイン幅を合わせ、右端を揃える */
     main { 
-      width: 1000px;
-      min-width: 1000px;
-      padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      width: 900px;
+      min-width: 900px;
+      padding: max(6px, env(safe-area-inset-top)) 0 max(6px, env(safe-area-inset-bottom)) 0;
       margin: 0; /* 中央寄せを解除し、左端を維持 */
     }
 
