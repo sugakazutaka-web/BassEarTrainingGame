@@ -485,8 +485,8 @@
       <div class="setting-item">
         <label id="label-sound-setting">正誤判定のサウンド</label>
         <div class="setting-options">
-          <button type="button" class="setting-opt-btn" id="sound-none-btn" data-sound="none">なし (標準)</button>
-          <button type="button" class="setting-opt-btn" id="sound-exists-btn" data-sound="exists">あり</button>
+          <button type="button" class="setting-opt-btn" id="sound-exists-btn" data-sound="exists">あり（標準）</button>
+          <button type="button" class="setting-opt-btn" id="sound-none-btn" data-sound="none">なし</button>
         </div>
       </div>
 
@@ -622,8 +622,8 @@
         speedSlow: "遅い (標準)",
         speedFast: "速い (倍速)",
         soundLabel: "正誤判定のサウンド",
-        soundNone: "なし (標準)",
-        soundExists: "あり",
+        soundExists: "あり（標準）",
+        soundNone: "なし",
         close: "閉じる",
         qType: "問題種別:",
         optChord: "コード",
@@ -668,8 +668,8 @@
         speedSlow: "Slow (Default)",
         speedFast: "Fast (Double)",
         soundLabel: "Judgment Sound",
-        soundNone: "None (Default)",
-        soundExists: "On",
+        soundExists: "On (Default)",
+        soundNone: "None",
         close: "Close",
         qType: "Mode:",
         optChord: "Chord",
@@ -709,10 +709,10 @@
       }
     };
 
-    // 設定状態の管理（English OFFをデフォルト初期値に設定）
+    // 設定状態の管理
     let appSettings = {
       speed: 'slow', // 'slow' (デフォルト) / 'fast' (倍速)
-      sound: 'none', // 'none' (デフォルト) / 'exists'
+      sound: 'exists', // 'exists' (デフォルト・左側) / 'none'
       lang: 'off'    // 'off' (デフォルト：日本語) / 'on' (English)
     };
 
@@ -736,8 +736,8 @@
       document.querySelector('#speed-slow-btn').textContent = t('speedSlow');
       document.querySelector('#speed-fast-btn').textContent = t('speedFast');
       document.querySelector('#label-sound-setting').textContent = t('soundLabel');
-      document.querySelector('#sound-none-btn').textContent = t('soundNone');
       document.querySelector('#sound-exists-btn').textContent = t('soundExists');
+      document.querySelector('#sound-none-btn').textContent = t('soundNone');
       document.querySelector('#modal-close-btn').textContent = t('close');
       
       document.querySelector('#label-q-type').textContent = t('qType');
@@ -793,12 +793,12 @@
         speedSlowBtn.classList.remove('active');
       }
 
-      if (appSettings.sound === 'none') {
-        soundNoneBtn.classList.add('active');
-        soundExistsBtn.classList.remove('active');
-      } else {
+      if (appSettings.sound === 'exists') {
         soundExistsBtn.classList.add('active');
         soundNoneBtn.classList.remove('active');
+      } else {
+        soundNoneBtn.classList.add('active');
+        soundExistsBtn.classList.remove('active');
       }
     }
 
@@ -839,13 +839,13 @@
       updateSettingsUI();
     });
 
-    soundNoneBtn.addEventListener('click', () => {
-      appSettings.sound = 'none';
+    soundExistsBtn.addEventListener('click', () => {
+      appSettings.sound = 'exists';
       updateSettingsUI();
     });
 
-    soundExistsBtn.addEventListener('click', () => {
-      appSettings.sound = 'exists';
+    soundNoneBtn.addEventListener('click', () => {
+      appSettings.sound = 'none';
       updateSettingsUI();
     });
 
