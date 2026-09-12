@@ -197,10 +197,10 @@
       100% { transform: scale(1); }
     }
 
-    /* 分割枠1: コード名 / スケール名用カード (フレキシブル幅に拡張) */
+    /* 分割枠1: コード名 / スケール名用カード */
     .status-title-card {
       flex: 0 1 auto;
-      min-width: 160px;
+      min-width: 120px;
       min-height: 38px;
       padding: 4px 10px;
       border-radius: 6px;
@@ -255,12 +255,43 @@
       text-overflow: ellipsis;
     }
 
-    /* レスポンシブ対応 (狭い画面では縦並び) */
+    /* モバイル・iPhone向け調整（横並びを維持しつつフォント・余白を調整） */
     @media (max-width: 768px) {
-      .top-controls { flex-direction: column; align-items: stretch; }
-      .action-row { width: 100%; }
-      #status-box { height: auto; flex-direction: column; }
-      .status-title-card, .status-message-card { flex: auto; width: 100%; height: auto; min-height: 36px; }
+      .top-controls {
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
+      .action-row {
+        width: auto;
+        gap: 4px;
+      }
+      button.primary-btn {
+        font-size: 0.82rem;
+        padding: 6px 10px;
+      }
+      button.secondary {
+        font-size: 0.78rem;
+        padding: 6px 8px;
+      }
+      #status-box {
+        flex-direction: row;
+        padding: 3px 6px;
+        gap: 4px;
+      }
+      .status-title-card {
+        min-width: 85px;
+        padding: 3px 6px;
+      }
+      #target-title {
+        font-size: 0.8rem;
+      }
+      .status-message-card {
+        padding: 3px 6px;
+      }
+      #status-message {
+        font-size: 0.75rem;
+      }
     }
 
     .board-shell { overflow-x: auto; border-radius: 10px; box-shadow: 0 16px 40px #0008; }
@@ -995,13 +1026,20 @@
       const displayTitle = (game.mode === 'chord' || isShowingResult) ? game.titleName : game.displayKey;
       targetTitle.textContent = displayTitle;
 
+      positions.forEach(p => p.cell.classList.remove('selected', 'correct', 'wrong', 'playing-correct', 'playing-wrong', 'computer-first'));
+
+      // 1音目のフレット位置をあらかじめハイライト表示
+      if (!isShowingResult && game.target.length > 0) {
+        game.target[0].cell.classList.add('computer-first');
+      }
+
       if (game.mode === 'chord' && !isShowingResult) {
         highlightRootNotes(game.rootPitchIndex);
         setStatus(null, `和音を再生中…`);
         playChord(game.chordMidiNotes);
         await wait(1500);
       } else if (game.mode === 'scale' && !isShowingResult) {
-        // スケールモード：最初にキー音を鳴らすタイミングでハイライト表示する
+        // スケールモード：キー音再生時に1音目のフレット位置があらかじめハイライトされます
         highlightRootNotes(game.rootPitchIndex);
         const rootPitchName = pitchNames[game.rootPitchIndex];
         setStatus(null, `キー音 (${rootPitchName}) を再生中…`);
@@ -1009,12 +1047,6 @@
         play(rootMidi, 1.8, 0.4);
         await wait(1200);
       }
-
-      if (!isShowingResult) {
-        game.target[0].cell.classList.add('computer-first');
-      }
-
-      positions.forEach(p => p.cell.classList.remove('selected', 'correct', 'wrong', 'playing-correct', 'playing-wrong'));
 
       for (let i = 0; i < total; i++) {
         let activePos = game.target[i];
