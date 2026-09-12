@@ -25,35 +25,140 @@
       background: #11100f; 
       color: #f7eee4; 
     }
-    main { width: min(1050px, 100%); padding: 28px 22px 36px; }
-    h1 { margin: 0; font-size: clamp(1.4rem, 3vw, 2.1rem); letter-spacing: .02em; }
-    p { color: #beb5a9; margin: 8px 0 20px; }
+    main { width: min(1050px, 100%); padding: 12px 16px 16px; }
+    h1 { margin: 0; font-size: clamp(1.2rem, 2.5vw, 1.6rem); letter-spacing: .02em; }
+    p { color: #beb5a9; margin: 4px 0 10px; font-size: 0.85rem; line-height: 1.3; }
 
-    /* --- status エリア（枠分割＆強調） --- */
-    .status-container {
-      margin: 0 0 16px;
+    /* コントロールエリアのレイアウト */
+    .controls {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
+      margin: 0 0 10px;
+    }
+    .settings-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* 「ゲームを始める」ボタンとステータス枠を同段に配置するレイアウト */
+    .top-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+    }
+    .action-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .control-group { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.88rem; }
+    select { 
+      appearance: none; 
+      background: #26221f; 
+      color: #ffca75; 
+      border: 1px solid #ffca75; 
+      border-radius: 6px; 
+      padding: 5px 26px 5px 10px; 
+      font: inherit; 
+      font-weight: 700; 
+      font-size: 0.85rem;
+      cursor: pointer; 
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffca75'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); 
+      background-repeat: no-repeat; 
+      background-position: right 6px center; 
+      background-size: 16px; 
+    }
+    
+    /* ベースボタン */
+    button { 
+      appearance: none; 
+      border: 1px solid #ffca75; 
+      border-radius: 6px; 
+      padding: 6px 12px; 
+      color: #17110a; 
+      background: #ffca75; 
+      font: inherit; 
+      font-weight: 800; 
+      cursor: pointer; 
+      transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease; 
+      white-space: nowrap;
+    }
+    button:active { transform: scale(0.96) !important; }
+
+    /* 「ゲームを始める」プライマリボタン */
+    button.primary-btn {
+      background: linear-gradient(135deg, #ffb300, #ff8f00);
+      border: 1px solid #ffcc80;
+      color: #0d0905;
+      font-size: 0.95rem;
+      padding: 8px 16px;
+      box-shadow: 0 3px 12px rgba(255, 143, 0, 0.45);
+      letter-spacing: 0.03em;
+    }
+    button.primary-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ffc107, #ffa000);
+      box-shadow: 0 4px 15px rgba(255, 143, 0, 0.65);
+      transform: translateY(-1px);
+    }
+
+    /* 「もう一度聴く/正解を確認する」ボタン */
+    button.secondary { 
+      color: #17110a; 
+      background: #e0a953; 
+      border: 1px solid #ffca75;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    button.secondary:hover:not(:disabled) {
+      background: #ebd08d;
+      box-shadow: 0 3px 10px rgba(255, 202, 117, 0.3);
+    }
+
+    button.small-btn {
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      border-radius: 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
+
+    /* --- status エリア（右側配置用に最適化） --- */
+    .status-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
     }
     #level-indicator {
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       font-weight: 700;
       color: #ffca75;
-      padding-left: 4px;
-      min-height: 1.3em;
+      padding-left: 2px;
+      min-height: 1.1em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     #status-box {
       width: 100%;
-      min-height: 98px;
-      padding: 10px;
-      border-radius: 12px;
+      min-height: 48px;
+      padding: 4px 8px;
+      border-radius: 8px;
       background: rgba(255, 202, 117, 0.05);
       border: 1.5px solid rgba(255, 202, 117, 0.25);
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
       display: flex;
-      gap: 12px;
-      align-items: stretch;
+      gap: 8px;
+      align-items: center;
       transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
@@ -61,7 +166,7 @@
     #status-box.status-correct {
       background: rgba(135, 227, 154, 0.1);
       border-color: #87e39a;
-      box-shadow: 0 0 25px rgba(135, 227, 154, 0.3);
+      box-shadow: 0 0 15px rgba(135, 227, 154, 0.3);
       animation: status-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     #status-box.status-correct .status-title-card,
@@ -76,7 +181,7 @@
     #status-box.status-wrong {
       background: rgba(242, 126, 114, 0.1);
       border-color: #f27e72;
-      box-shadow: 0 0 20px rgba(242, 126, 114, 0.25);
+      box-shadow: 0 0 15px rgba(242, 126, 114, 0.25);
     }
     #status-box.status-wrong .status-title-card,
     #status-box.status-wrong .status-message-card {
@@ -92,150 +197,74 @@
       100% { transform: scale(1); }
     }
 
-    /* 分割枠1: コード名 / スケール名用カード（十分な上下幅を確保） */
+    /* 分割枠1: コード名 / スケール名用カード (フレキシブル幅に拡張) */
     .status-title-card {
-      flex: 0 0 320px;
-      height: 92px;
-      padding: 8px 12px;
-      border-radius: 8px;
+      flex: 0 1 auto;
+      min-width: 160px;
+      min-height: 38px;
+      padding: 4px 10px;
+      border-radius: 6px;
       background: rgba(255, 202, 117, 0.08);
       border: 1px solid rgba(255, 202, 117, 0.2);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2px;
+      gap: 0px;
       transition: all 0.3s ease;
-      overflow: hidden;
     }
     .status-label {
-      font-size: 0.72rem;
+      font-size: 0.62rem;
       font-weight: 700;
       color: #beb5a9;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       flex-shrink: 0;
+      line-height: 1;
     }
     #target-title {
-      font-size: clamp(1.05rem, 2.1vw, 1.35rem);
+      font-size: 0.92rem;
       font-weight: 900;
       color: #ffca75;
-      line-height: 1.15;
+      line-height: 1.2;
+      white-space: normal;
       word-break: break-word;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
     }
 
     /* 分割枠2: メッセージ・進捗表示用カード */
     .status-message-card {
       flex: 1;
-      height: 92px;
-      padding: 8px 16px;
-      border-radius: 8px;
+      min-height: 38px;
+      padding: 4px 10px;
+      border-radius: 6px;
       background: rgba(255, 202, 117, 0.04);
       border: 1px solid rgba(255, 202, 117, 0.15);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       transition: all 0.3s ease;
+      min-width: 0;
     }
     #status-message {
-      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      font-size: 0.85rem;
       font-weight: 700;
       color: #ffe3b3;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      line-height: 1.2;
+      white-space: nowrap;
       overflow: hidden;
-      word-break: break-word;
+      text-overflow: ellipsis;
     }
 
     /* レスポンシブ対応 (狭い画面では縦並び) */
-    @media (max-width: 640px) {
-      #status-box { flex-direction: column; }
-      .status-title-card, .status-message-card { flex: auto; width: 100%; height: auto; min-height: 76px; }
+    @media (max-width: 768px) {
+      .top-controls { flex-direction: column; align-items: stretch; }
+      .action-row { width: 100%; }
+      #status-box { height: auto; flex-direction: column; }
+      .status-title-card, .status-message-card { flex: auto; width: 100%; height: auto; min-height: 36px; }
     }
 
-    /* コントロールエリアのレイアウト */
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin: 0 0 16px;
-    }
-    .settings-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .action-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .control-group { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem; }
-    select { appearance: none; background: #26221f; color: #ffca75; border: 1px solid #ffca75; border-radius: 7px; padding: 9px 30px 9px 12px; font: inherit; font-weight: 700; cursor: pointer; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffca75'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 8px center; background-size: 18px; }
-    
-    /* ベースボタン */
-    button { 
-      appearance: none; 
-      border: 1px solid #ffca75; 
-      border-radius: 7px; 
-      padding: 9px 16px; 
-      color: #17110a; 
-      background: #ffca75; 
-      font: inherit; 
-      font-weight: 800; 
-      cursor: pointer; 
-      transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease; 
-    }
-    button:active { transform: scale(0.96) !important; }
-
-    /* 「ゲームを始める」プライマリボタン */
-    button.primary-btn {
-      background: linear-gradient(135deg, #ffb300, #ff8f00);
-      border: 1px solid #ffcc80;
-      color: #0d0905;
-      font-size: 1.05rem;
-      padding: 11px 24px;
-      box-shadow: 0 4px 15px rgba(255, 143, 0, 0.45);
-      letter-spacing: 0.03em;
-    }
-    button.primary-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ffc107, #ffa000);
-      box-shadow: 0 6px 20px rgba(255, 143, 0, 0.65);
-      transform: translateY(-2px);
-    }
-
-    /* 「もう一度聴く/正解を確認する」ボタン */
-    button.secondary { 
-      color: #17110a; 
-      background: #e0a953; 
-      border: 1px solid #ffca75;
-      padding: 11px 18px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    button.secondary:hover:not(:disabled) {
-      background: #ebd08d;
-      box-shadow: 0 4px 12px rgba(255, 202, 117, 0.3);
-    }
-
-    button.small-btn {
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      border-radius: 6px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
-
-    .board-shell { overflow-x: auto; border-radius: 12px; box-shadow: 0 22px 60px #0008; }
-    #fretboard { display: block; min-width: 1000px; width: 100%; height: auto; background: #372018; touch-action: manipulation; }
+    .board-shell { overflow-x: auto; border-radius: 10px; box-shadow: 0 16px 40px #0008; }
+    #fretboard { display: block; min-width: 900px; width: 100%; height: auto; background: #372018; touch-action: manipulation; }
     .cell { cursor: pointer; }
     .cell rect { fill: transparent; transition: fill .1s ease; }
     .cell:hover rect, .cell:focus rect { fill: #ffd27430; outline: none; }
@@ -248,7 +277,7 @@
     .cell.correct rect { fill: #87e39a85 !important; stroke: #87e39a; stroke-width: 1.5px; }
     .cell.wrong rect { fill: #f27e7285 !important; stroke: #f27e72; stroke-width: 1.5px; }
     
-    /* [軽量化改修] ルート音マーカー: 無制限のCSS無限アニメーション(pulse)を停止 */
+    /* ルート音マーカー */
     .root-marker {
       fill: #ff4d4d33;
       stroke: #ff4d4d;
@@ -261,10 +290,10 @@
     .note { fill: #f6e7d0; font-size: 12px; font-weight: 750; text-anchor: middle; pointer-events: none; }
     .string-name { fill: #f6e7d0; font-size: 16px; font-weight: 800; text-anchor: end; }
     .fret-number { fill: #d0b7a1; font-size: 14px; text-anchor: middle; }
-    .hint { margin-top: 14px; font-size: .9rem; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-    .hint-left { display: flex; gap: 16px; align-items: center; }
-    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
-    .legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
+    .hint { margin-top: 8px; font-size: .82rem; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .hint-left { display: flex; gap: 12px; align-items: center; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
     
     /* 進捗 / カウンター表示用スタイル */
     #deck-counter {
@@ -272,9 +301,9 @@
       color: #ffca75;
       background: rgba(255, 202, 117, 0.12);
       border: 1px solid rgba(255, 202, 117, 0.3);
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 0.85rem;
       letter-spacing: 0.05em;
     }
   </style>
@@ -313,38 +342,40 @@
         </div>
       </div>
 
-      <!-- 下段: アクションボタン -->
-      <div class="action-row">
-        <button id="start" class="primary-btn" type="button">▶ ゲームを始める</button>
-        <button id="replay" class="secondary" type="button" disabled>🔊 もう一度聴く</button>
-      </div>
-    </div>
-
-    <div class="status-container">
-      <div id="level-indicator"></div>
-      
-      <!-- 左右分割レイアウト -->
-      <div id="status-box" aria-live="polite">
-        <!-- 左側枠: コード名 / スケール名 -->
-        <div class="status-title-card">
-          <div class="status-label" id="target-label">CHORD / SCALE</div>
-          <div id="target-title">---</div>
+      <!-- 下段: アクションボタン & ステータス枠 (同段配置) -->
+      <div class="top-controls">
+        <div class="action-row">
+          <button id="start" class="primary-btn" type="button">▶ ゲームを始める</button>
+          <button id="replay" class="secondary" type="button" disabled>🔊 もう一度聴く</button>
         </div>
 
-        <!-- 右側枠: メッセージ / ガイド -->
-        <div class="status-message-card">
-          <span id="status-message">「ゲームを始める」を押してください</span>
-          <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
+        <div class="status-container">
+          <div id="level-indicator"></div>
+          
+          <!-- 左右分割レイアウト -->
+          <div id="status-box" aria-live="polite">
+            <!-- 左側枠: コード名 / スケール名 -->
+            <div class="status-title-card">
+              <div class="status-label" id="target-label">CHORD / SCALE</div>
+              <div id="target-title">---</div>
+            </div>
+
+            <!-- 右側枠: メッセージ / ガイド -->
+            <div class="status-message-card">
+              <span id="status-message">「ゲームを始める」を押してください</span>
+              <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
     <div class="board-shell">
-      <svg id="fretboard" viewBox="0 0 1260 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
+      <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
     </div>
     <div class="hint">
       <div class="hint-left">
-        <span>1オクターブ上のチューニング：E2 · A2 · D3 · G3 ／ 0〜20フレット</span>
+        <span>1オクターブ上のチューニング：E3 · A3 · D4 · G4 ／ 0〜15フレット</span>
         <span class="legend-item"><span class="legend-dot"></span> ルート音（根音）/ キー音</span>
       </div>
       <div id="deck-counter">正解数: 0/0</div>
@@ -376,27 +407,27 @@
 
     const NS = 'http://www.w3.org/2000/svg';
     const strings = [
-      { name: 'G', midi: 55, label: 'G3' },
-      { name: 'D', midi: 50, label: 'D3' },
-      { name: 'A', midi: 45, label: 'A2' },
-      { name: 'E', midi: 40, label: 'E2' }
+      { name: 'G', midi: 67, label: 'G4' },
+      { name: 'D', midi: 62, label: 'D4' },
+      { name: 'A', midi: 57, label: 'A3' },
+      { name: 'E', midi: 52, label: 'E3' }
     ];
     const pitchNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     
-    // 基礎コード・7th (isTension: false)
+    // 基礎コード・7th
     const basicChordDefinitions = [
-      { name: '', intervals: [0, 4, 7], isTension: false },            // Major
-      { name: 'm', intervals: [0, 3, 7], isTension: false },           // Minor
-      { name: '7', intervals: [0, 4, 7, 10], isTension: false },       // Dominant 7th
-      { name: 'm7', intervals: [0, 3, 7, 10], isTension: false },      // Minor 7th
-      { name: 'maj7', intervals: [0, 4, 7, 11], isTension: false },    // Major 7th
-      { name: 'dim', intervals: [0, 3, 6], isTension: false },         // Diminished
-      { name: 'aug', intervals: [0, 4, 8], isTension: false },         // Augmented
-      { name: 'm7♭5', intervals: [0, 3, 6, 10], isTension: false },    // Half Diminished
-      { name: 'sus4', intervals: [0, 5, 7], isTension: false }         // Suspended 4th
+      { name: '', intervals: [0, 4, 7], isTension: false },
+      { name: 'm', intervals: [0, 3, 7], isTension: false },
+      { name: '7', intervals: [0, 4, 7, 10], isTension: false },
+      { name: 'm7', intervals: [0, 3, 7, 10], isTension: false },
+      { name: 'maj7', intervals: [0, 4, 7, 11], isTension: false },
+      { name: 'dim', intervals: [0, 3, 6], isTension: false },
+      { name: 'aug', intervals: [0, 4, 8], isTension: false },
+      { name: 'm7♭5', intervals: [0, 3, 6, 10], isTension: false },
+      { name: 'sus4', intervals: [0, 5, 7], isTension: false }
     ];
 
-    // テンションコード (isTension: true)
+    // テンションコード
     const tensionChordDefinitions = [
       { name: '9', intervals: [0, 4, 7, 10, 14], isTension: true },
       { name: 'm9', intervals: [0, 3, 7, 10, 14], isTension: true },
@@ -412,7 +443,7 @@
       { name: '6/9', intervals: [0, 4, 7, 9, 14], isTension: true }
     ];
 
-    // ジャズスケール定義
+    // ジャズスケール定義（追加分を含む全16種類）
     const jazzScaleDefinitions = [
       { name: 'Major Scale', intervals: [0, 2, 4, 5, 7, 9, 11, 12] },
       { name: 'Dorian Scale', intervals: [0, 2, 3, 5, 7, 9, 10, 12] },
@@ -426,10 +457,12 @@
       { name: 'Lydian Dominant Scale', intervals: [0, 2, 4, 6, 7, 9, 10, 12] },
       { name: 'Altered Scale', intervals: [0, 1, 3, 4, 6, 8, 10, 12] },
       { name: 'Diminished Scale (HW)', intervals: [0, 1, 3, 4, 6, 7, 9, 10, 12] },
-      { name: 'Whole Tone Scale', intervals: [0, 2, 4, 6, 8, 10, 12] },
+      // 新規追加スケール
       { name: 'Major Pentatonic Scale', intervals: [0, 2, 4, 7, 9, 12] },
       { name: 'Minor Pentatonic Scale', intervals: [0, 3, 5, 7, 10, 12] },
-      { name: 'Blues Scale', intervals: [0, 3, 5, 6, 7, 10, 12] }
+      { name: 'Blues Scale', intervals: [0, 3, 5, 6, 7, 10, 12] },
+      { name: 'Whole Tone Scale', intervals: [0, 2, 4, 6, 8, 10, 12] },
+      { name: 'Diminished Scale (WH)', intervals: [0, 2, 3, 5, 6, 8, 9, 11, 12] }
     ];
 
     let scaleDeck = [];
@@ -455,13 +488,14 @@
       deckCounter.style.display = 'inline-block';
       if (questionTypeSelect.value === 'scale') {
         const displayIndex = currentScaleIndex === 0 ? 1 : currentScaleIndex;
-        deckCounter.textContent = `進捗: ${displayIndex}/32`;
+        const totalScales = jazzScaleDefinitions.length * 2;
+        deckCounter.textContent = `進捗: ${displayIndex}/${totalScales}`;
       } else {
         deckCounter.textContent = `正解数: ${chordCorrectCount}/${chordQuestionCount}`;
       }
     }
 
-    const x0 = 150, y0 = 56, boardWidth = 1060, boardHeight = 220, frets = 20;
+    const x0 = 150, y0 = 56, boardWidth = 820, boardHeight = 220, frets = 15;
     let audioContext;
 
     let tensionUnlocked = false;
@@ -505,7 +539,7 @@
       } else {
         noteCountGroup.style.display = 'none';
         firstNoteGroup.style.display = 'none';
-        descriptionText.textContent = '最初にスケール構成音（上昇または下降）が再生されます。キー音を手がかりに、対応するフレットを順番に押してください。';
+        descriptionText.textContent = '最初にキー音が鳴り、続いてスケール構成音（上昇または下降）が再生されます。キー音を手がかりに、対応するフレットを順番に押してください。';
         targetLabel.textContent = 'スケール名';
         targetTitle.textContent = '---';
       }
@@ -533,61 +567,136 @@
     function fretX(fret) { return x0 + boardWidth * (1 - Math.pow(0.965, fret) ) / (1 - Math.pow(0.965, frets)); }
     function noteName(midi) { return pitchNames[midi % 12] + (Math.floor(midi / 12) - 1); }
     
-    /* [軽量化改修] ベース音および単音再生：シンプルなサイン波による発音（オシレーター1基のみ） */
-    function play(midi, sustain = 0.56, volume = 0.28) {
+    /* 単音再生（1オクターブ下のサブオシレーターを追加） */
+    function play(midi, sustain = 0.56, volume = 0.35) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const now = audioContext.currentTime;
-      const frequency = 440 * Math.pow(2, (midi - 69) / 12);
+      const freq = 440 * Math.pow(2, (midi - 69) / 12);
+      const subFreq = freq / 2;
+
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const oscSub = audioContext.createOscillator();
       
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.type = 'sine'; // サイン波でシンプルな発音
-      osc.frequency.setValueAtTime(frequency, now);
-      
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
-      
-      osc.connect(gain).connect(audioContext.destination);
-      osc.start(now);
-      
+      const gain1 = audioContext.createGain();
+      const gain2 = audioContext.createGain();
+      const gainSub = audioContext.createGain();
+      const masterGain = audioContext.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, now);
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2, now);
+
+      oscSub.type = 'sine';
+      oscSub.frequency.setValueAtTime(subFreq, now);
+
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(volume, now + 0.003);
+      gain1.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.08);
+
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(volume * 0.45, now + 0.002);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+
+      const subVolume = volume * 0.38;
+      gainSub.gain.setValueAtTime(0.0001, now);
+      gainSub.gain.linearRampToValueAtTime(subVolume, now + 0.005);
+      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.6, now + 0.1);
+
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      oscSub.connect(gainSub);
+
+      gain1.connect(masterGain);
+      gain2.connect(masterGain);
+      gainSub.connect(masterGain);
+      masterGain.connect(audioContext.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      oscSub.start(now);
+
       if (sustain === null) {
         return () => {
           const releaseAt = audioContext.currentTime;
-          gain.gain.cancelScheduledValues(releaseAt);
-          gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), releaseAt);
-          gain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.1);
-          osc.stop(releaseAt + 0.12);
+          masterGain.gain.cancelScheduledValues(releaseAt);
+          masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), releaseAt);
+          masterGain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.1);
+          osc1.stop(releaseAt + 0.12);
+          osc2.stop(releaseAt + 0.12);
+          oscSub.stop(releaseAt + 0.12);
         };
       }
+
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
+      gainSub.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
+      osc1.stop(now + sustain + 0.02);
+      osc2.stop(now + sustain + 0.02);
+      oscSub.stop(now + sustain + 0.02);
       
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-      osc.stop(now + sustain + 0.02);
       return () => {};
     }
 
-    /* [軽量化改修] 「コードを鳴らす」用：サイン波による軽量な発音処理 */
-    function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.22) {
+    /* アルペジオ／コード用単音再生 */
+    function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.28) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
+      const subFreq = freq / 2;
 
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const oscSub = audioContext.createOscillator();
+      
+      const gain1 = audioContext.createGain();
+      const gain2 = audioContext.createGain();
+      const gainSub = audioContext.createGain();
+      const masterGain = audioContext.createGain();
 
-      osc.type = 'sine'; // サイン波に変更してノイズ生成や複雑なフィルター処理を排除
-      osc.frequency.setValueAtTime(freq, startTime);
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, startTime);
 
-      gain.gain.setValueAtTime(0.0001, startTime);
-      gain.gain.linearRampToValueAtTime(volume, startTime + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2, startTime);
 
-      osc.connect(gain).connect(audioContext.destination);
+      oscSub.type = 'sine';
+      oscSub.frequency.setValueAtTime(subFreq, startTime);
 
-      osc.start(startTime);
-      osc.stop(startTime + duration + 0.02);
+      gain1.gain.setValueAtTime(0.0001, startTime);
+      gain1.gain.linearRampToValueAtTime(volume, startTime + 0.004);
+      gain1.gain.exponentialRampToValueAtTime(volume * 0.4, startTime + 0.12);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      gain2.gain.setValueAtTime(0.0001, startTime);
+      gain2.gain.linearRampToValueAtTime(volume * 0.35, startTime + 0.002);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.09);
+
+      const subVolume = volume * 0.35;
+      gainSub.gain.setValueAtTime(0.0001, startTime);
+      gainSub.gain.linearRampToValueAtTime(subVolume, startTime + 0.006);
+      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.5, startTime + 0.14);
+      gainSub.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      oscSub.connect(gainSub);
+
+      gain1.connect(masterGain);
+      gain2.connect(masterGain);
+      gainSub.connect(masterGain);
+      masterGain.connect(audioContext.destination);
+
+      osc1.start(startTime);
+      osc2.start(startTime);
+      oscSub.start(startTime);
+
+      osc1.stop(startTime + duration + 0.02);
+      osc2.stop(startTime + duration + 0.02);
+      oscSub.stop(startTime + duration + 0.02);
     }
 
-    /* コード全音再生（ルート音を強調＆長めに鳴らす） */
+    /* コード全音再生 */
     function playChord(midiNotes) {
       if (!midiNotes || midiNotes.length === 0) return;
       const sortedMidis = [...midiNotes].sort((a, b) => a - b);
@@ -595,10 +704,10 @@
       sortedMidis.forEach((midi, idx) => {
         const isRoot = (midi % 12 === game.rootPitchIndex);
         if (isRoot) {
-          play(midi, 2.5, 0.35);
+          play(midi, 2.5, 0.4);
         } else {
           setTimeout(() => {
-            play(midi, 1.4, 0.20);
+            play(midi, 1.4, 0.25);
           }, idx * 45);
         }
       });
@@ -617,7 +726,7 @@
 
       sortedMidis.forEach((midi, index) => {
         const noteStartTime = startTime + (index * intervalMs / 1000);
-        playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.22);
+        playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.28);
       });
 
       const totalWaitMs = (sortedMidis.length - 1) * intervalMs + 1200;
@@ -690,7 +799,7 @@
         ? [...basicChordDefinitions, ...tensionChordDefinitions]
         : basicChordDefinitions;
 
-      const firstCandidates = positions.filter(pos => pos.fret >= 1 && pos.fret <= 12);
+      const firstCandidates = positions.filter(pos => pos.fret >= 1 && pos.fret <= 10);
 
       while (attempts < 2500) {
         attempts++;
@@ -770,14 +879,14 @@
         }
 
         if (validSeq && validSeq.length === count) {
-          const baseMidi = 48 + rootPitchIndex;
+          const baseMidi = 60 + rootPitchIndex;
           const chordMidiNotes = chordDef.intervals.map(i => baseMidi + i);
           return { sequence: validSeq, titleName: chordName, displayKey: chordName, rootPitchIndex, chordMidiNotes };
         }
       }
 
-      const fallbackSeq = positions.filter(p => p.fret >= 1 && p.fret <= 12).slice(0, count);
-      return { sequence: fallbackSeq, titleName: 'C Major', displayKey: 'C Major', rootPitchIndex: 0, chordMidiNotes: [48, 52, 55] };
+      const fallbackSeq = positions.filter(p => p.fret >= 1 && p.fret <= 10).slice(0, count);
+      return { sequence: fallbackSeq, titleName: 'C Major', displayKey: 'C Major', rootPitchIndex: 0, chordMidiNotes: [60, 64, 67] };
     }
 
     function makeScaleQuestion() {
@@ -805,7 +914,7 @@
           const scaleTitle = `${rootName} ${scaleDef.name}`;
           const displayKey = `${rootName} Key`;
 
-          const firstCandidates = positions.filter(pos => pos.midi % 12 === rootPitchIndex && pos.fret >= 1 && pos.fret <= 12);
+          const firstCandidates = positions.filter(pos => pos.midi % 12 === rootPitchIndex && pos.fret >= 1 && pos.fret <= 8);
           if (firstCandidates.length === 0) continue;
           const anchorRoot = firstCandidates[Math.floor(Math.random() * firstCandidates.length)];
 
@@ -840,7 +949,7 @@
         }
       }
 
-      const fallbackSeq = positions.filter(p => p.fret >= 1 && p.fret <= 12).slice(0, 8);
+      const fallbackSeq = positions.filter(p => p.fret >= 1 && p.fret <= 8).slice(0, 8);
       return { sequence: fallbackSeq, titleName: 'C Major Scale', displayKey: 'C Key', rootPitchIndex: 0, chordMidiNotes: [] };
     }
 
@@ -887,9 +996,18 @@
       targetTitle.textContent = displayTitle;
 
       if (game.mode === 'chord' && !isShowingResult) {
+        highlightRootNotes(game.rootPitchIndex);
         setStatus(null, `和音を再生中…`);
         playChord(game.chordMidiNotes);
         await wait(1500);
+      } else if (game.mode === 'scale' && !isShowingResult) {
+        // スケールモード：最初にキー音を鳴らすタイミングでハイライト表示する
+        highlightRootNotes(game.rootPitchIndex);
+        const rootPitchName = pitchNames[game.rootPitchIndex];
+        setStatus(null, `キー音 (${rootPitchName}) を再生中…`);
+        const rootMidi = 60 + game.rootPitchIndex;
+        play(rootMidi, 1.8, 0.4);
+        await wait(1200);
       }
 
       if (!isShowingResult) {
@@ -982,7 +1100,6 @@
         }
       });
 
-      const answerNames = game.target.map(p => noteName(p.midi)).join(' → ');
       targetTitle.textContent = game.titleName;
       
       if (game.mode === 'chord') {
@@ -996,14 +1113,14 @@
                 consecutiveWrong = 0;
                 setStatus(null, `🎉 5問連続正解！🔥 テンションコード問題が解放されました！`, 'correct');
               } else {
-                setStatus(null, `🎉 正解！ [${consecutiveCorrect}/5 連続正解] (${answerNames})`, 'correct');
+                setStatus(null, `🎉 正解！ [${consecutiveCorrect}/5 連続正解]`, 'correct');
               }
             } else {
               consecutiveWrong = 0;
-              setStatus(null, `🎉 正解！ (${answerNames})`, 'correct');
+              setStatus(null, `🎉 正解！`, 'correct');
             }
           } else {
-            setStatus(null, `🎉 正解！ (${answerNames})`, 'correct');
+            setStatus(null, `🎉 正解！`, 'correct');
           }
         } else {
           if (isNewAnswer) {
@@ -1013,25 +1130,25 @@
                 tensionUnlocked = false;
                 consecutiveCorrect = 0;
                 consecutiveWrong = 0;
-                setStatus(null, `❌ 2問連続不正解。基本コードモードに戻ります。(正解: ${answerNames})`, 'wrong');
+                setStatus(null, `❌ 2問連続不正解。基本コードモードに戻ります。`, 'wrong');
               } else {
-                setStatus(null, `❌ 不正解。[連続不正解: 1/2] (正解: ${answerNames})`, 'wrong');
+                setStatus(null, `❌ 不正解。[連続不正解: 1/2]`, 'wrong');
               }
             } else {
               consecutiveCorrect = 0;
-              setStatus(null, `❌ 不正解。(正解: ${answerNames})`, 'wrong');
+              setStatus(null, `❌ 不正解。`, 'wrong');
             }
           } else {
-            setStatus(null, `❌ 不正解。(正解: ${answerNames})`, 'wrong');
+            setStatus(null, `❌ 不正解。`, 'wrong');
           }
         }
         updateLevelIndicator();
       } else {
         playChordBtn.style.display = 'none';
         if (correct) {
-          setStatus(null, `🎉 正解！ (${answerNames})`, 'correct');
+          setStatus(null, `🎉 正解！`, 'correct');
         } else {
-          setStatus(null, `❌ 不正解。(正解: ${answerNames})`, 'wrong');
+          setStatus(null, `❌ 不正解。`, 'wrong');
         }
       }
       
@@ -1101,7 +1218,6 @@
       };
 
       targetTitle.textContent = mode === 'chord' ? q.titleName : q.displayKey;
-      highlightRootNotes(q.rootPitchIndex);
       await playQuestion();
     }
 
@@ -1113,7 +1229,7 @@
       }
     });
 
-    // フレットボード描画
+    // フレットボード描画（15フレット仕様）
     svg.append(node('rect', { x: x0, y: y0, width: boardWidth, height: boardHeight, fill: '#4c2d20' }));
     for (let fret = 0; fret <= frets; fret++) {
       const x = fretX(fret);
@@ -1122,7 +1238,8 @@
       number.textContent = fret;
       svg.append(number);
     }
-    [3, 5, 7, 9, 15, 17, 19].forEach(fret => svg.append(node('circle', { cx: (fretX(fret - 1) + fretX(fret)) / 2, cy: 166, r: 7, fill: '#e8c792' })));
+    // ドットインレイ配置
+    [3, 5, 7, 9, 15].forEach(fret => svg.append(node('circle', { cx: (fretX(fret - 1) + fretX(fret)) / 2, cy: 166, r: 7, fill: '#e8c792' })));
     [116, 226].forEach(y => svg.append(node('circle', { cx: (fretX(11) + fretX(12)) / 2, cy: y, r: 7, fill: '#e8c792' })));
 
     rootMarkerGroup = node('g', { id: 'root-markers' });
