@@ -76,14 +76,15 @@
     .controls {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin: 0 0 6px;
+      gap: 8px;
+      margin: 0 0 8px;
     }
     .settings-row {
       display: flex;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: nowrap;
       align-items: center;
+      padding: 4px 0;
     }
 
     /* 「ゲームを始める」ボタンとステータス枠を同段に配置するレイアウト */
@@ -100,21 +101,27 @@
       flex-shrink: 0;
     }
 
-    .control-group { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.88rem; }
+    .control-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      font-weight: 700; 
+      font-size: 0.95rem; /* 少し大きく */
+    }
     select { 
       appearance: none; 
       background: #26221f; 
       color: #ffca75; 
       border: 1px solid #ffca75; 
       border-radius: 6px; 
-      padding: 4px 24px 4px 8px; 
+      padding: 6px 28px 6px 10px; /* 少し大きく */
       font: inherit; 
       font-weight: 700; 
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       cursor: pointer; 
       background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffca75'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); 
       background-repeat: no-repeat; 
-      background-position: right 6px center; 
+      background-position: right 8px center; 
       background-size: 16px; 
     }
     
@@ -164,6 +171,24 @@
       box-shadow: 0 3px 10px rgba(255, 202, 117, 0.3);
     }
 
+    /* 設定ボタン */
+    button.settings-btn {
+      background: #26221f;
+      color: #ffca75;
+      border: 1px solid #ffca75;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto; /* 右端に配置 */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    button.settings-btn:hover {
+      background: #352f2a;
+    }
+
     button.small-btn {
       padding: 4px 8px;
       font-size: 0.78rem;
@@ -172,6 +197,85 @@
       flex-shrink: 0;
     }
     button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
+
+    /* --- 設定メニューモーダル --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .settings-modal {
+      background: #1c1815;
+      border: 1.5px solid #ffca75;
+      border-radius: 12px;
+      padding: 20px 24px;
+      width: 340px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .settings-modal h3 {
+      margin: 0 0 4px 0;
+      color: #ffca75;
+      font-size: 1.1rem;
+      border-bottom: 1px solid rgba(255,202,117,0.2);
+      padding-bottom: 8px;
+    }
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .setting-item label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #e0d0b8;
+    }
+    .setting-options {
+      display: flex;
+      gap: 8px;
+    }
+    .setting-opt-btn {
+      flex: 1;
+      padding: 8px;
+      background: #26221f;
+      color: #d0c0a8;
+      border: 1px solid #55483c;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .setting-opt-btn.active {
+      background: #ffca75;
+      color: #17110a;
+      border-color: #ffca75;
+      box-shadow: 0 2px 8px rgba(255,202,117,0.3);
+    }
+    .modal-close-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+    .modal-close-btn {
+      background: #ffca75;
+      color: #17110a;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: 800;
+      cursor: pointer;
+    }
 
     /* --- status エリア --- */
     .status-container {
@@ -356,12 +460,48 @@
   </style>
 </head>
 <body>
+  <!-- 設定メニューモーダル -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="settings-modal">
+      <h3 id="modal-title-settings">⚙️ 設定</h3>
+      
+      <!-- English ON / OFF 設定（メニュー最上段） -->
+      <div class="setting-item">
+        <label id="label-lang-setting">English</label>
+        <div class="setting-options">
+          <button type="button" class="setting-opt-btn" id="lang-off-btn" data-lang="off">OFF (日本語)</button>
+          <button type="button" class="setting-opt-btn" id="lang-on-btn" data-lang="on">ON (English)</button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label id="label-speed-setting">問題の再生スピード</label>
+        <div class="setting-options">
+          <button type="button" class="setting-opt-btn" id="speed-slow-btn" data-speed="slow">遅い (標準)</button>
+          <button type="button" class="setting-opt-btn" id="speed-fast-btn" data-speed="fast">速い (倍速)</button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <label id="label-sound-setting">正誤判定のサウンド</label>
+        <div class="setting-options">
+          <button type="button" class="setting-opt-btn" id="sound-none-btn" data-sound="none">なし (標準)</button>
+          <button type="button" class="setting-opt-btn" id="sound-exists-btn" data-sound="exists">あり</button>
+        </div>
+      </div>
+
+      <div class="modal-close-row">
+        <button type="button" id="modal-close-btn" class="modal-close-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
   <div class="app-viewport-wrapper">
     <main>
       <div class="controls">
         <div class="settings-row">
           <div class="control-group">
-            <label for="question-type">問題種別:</label>
+            <label for="question-type" id="label-q-type">問題種別:</label>
             <select id="question-type">
               <option value="chord" selected>コード</option>
               <option value="scale">スケール（ジャズ）</option>
@@ -369,7 +509,7 @@
           </div>
 
           <div class="control-group" id="note-count-group">
-            <label for="note-count">音数:</label>
+            <label for="note-count" id="label-note-count">音数:</label>
             <select id="note-count">
               <option value="2">2音</option>
               <option value="3" selected>3音</option>
@@ -378,12 +518,15 @@
           </div>
 
           <div class="control-group" id="first-note-group">
-            <label for="first-note-mode">1音目の音:</label>
+            <label for="first-note-mode" id="label-first-note">1音目の音:</label>
             <select id="first-note-mode">
               <option value="root" selected>ルート音固定</option>
               <option value="random">構成音からランダム（ルート除外）</option>
             </select>
           </div>
+
+          <!-- 設定ボタン -->
+          <button id="open-settings" class="settings-btn" type="button">⚙️ 設定</button>
         </div>
 
         <div class="top-controls">
@@ -416,7 +559,7 @@
       <div class="hint">
         <div id="deck-counter">正解数: 0/0</div>
         <div class="hint-left">
-          <span class="legend-item"><span class="legend-dot"></span> ルート音（根音）/ キー音</span>
+          <span class="legend-item"><span class="legend-dot"></span> <span id="legend-root-text">ルート音（根音）/ キー音</span></span>
         </div>
       </div>
     </main>
@@ -458,6 +601,258 @@
     const noteCountGroup = document.querySelector('#note-count-group');
     const firstNoteGroup = document.querySelector('#first-note-group');
     const deckCounter = document.querySelector('#deck-counter');
+
+    // 設定メニュー関連要素
+    const openSettingsBtn = document.querySelector('#open-settings');
+    const settingsModal = document.querySelector('#settings-modal');
+    const modalCloseBtn = document.querySelector('#modal-close-btn');
+    const speedSlowBtn = document.querySelector('#speed-slow-btn');
+    const speedFastBtn = document.querySelector('#speed-fast-btn');
+    const soundNoneBtn = document.querySelector('#sound-none-btn');
+    const soundExistsBtn = document.querySelector('#sound-exists-btn');
+    const langOffBtn = document.querySelector('#lang-off-btn');
+    const langOnBtn = document.querySelector('#lang-on-btn');
+
+    // 多言語テキスト辞書
+    const i18n = {
+      ja: {
+        settings: "⚙️ 設定",
+        langLabel: "English",
+        speedLabel: "問題の再生スピード",
+        speedSlow: "遅い (標準)",
+        speedFast: "速い (倍速)",
+        soundLabel: "正誤判定のサウンド",
+        soundNone: "なし (標準)",
+        soundExists: "あり",
+        close: "閉じる",
+        qType: "問題種別:",
+        optChord: "コード",
+        optScale: "スケール（ジャズ）",
+        noteCount: "音数:",
+        opt2: "2音",
+        opt3: "3音",
+        opt4: "4音",
+        firstNote: "1音目の音:",
+        optRoot: "ルート音固定",
+        optRandom: "構成音からランダム（ルート除外）",
+        startBtn: "▶ ゲームを始める",
+        replayBtn: "🔊 もう一度聴く",
+        viewResultBtn: "👁️ 正解を確認する",
+        playChordBtn: "🎸 コードを鳴らす",
+        legendRoot: "ルート音（根音）/ キー音",
+        initialMsg: "「ゲームを始める」を押してください",
+        chordTitleLabel: "コード名",
+        scaleTitleLabel: "スケール名",
+        levelTension: (w) => `🔥 テンションコード解放中！ (連続不正解: ${w}/2 で難易度ダウン)`,
+        levelBasic: (c) => `🎵 基本コードモード (連続正解: ${c}/5 でテンション解放)`,
+        progressScale: (idx, total) => `進捗: ${idx}/${total}`,
+        progressChord: (corr, total) => `正解数: ${corr}/${total}`,
+        chordPlaying: "和音を再生中…",
+        scalePlaying: (name) => `キー音 (${name}) を再生中…`,
+        firstNoteGuessPrompt: "1音目の音: フレットボードから音を選んでください",
+        listenCarefully: (i, total) => `よく聴いてください… (${i} / ${total}音目)`,
+        guessNextPrompt: (curr, total) => `次の音をクリックしてください（${curr} / ${total}）`,
+        guessFirstPrompt: (total) => `聴こえた順に、フレットを${total}つクリックしてください（1 / ${total}）`,
+        correctMsg: "🎉 正解！",
+        correctStreakMsg: (c) => `🎉 正解！ [${c}/5 連続正解]`,
+        tensionUnlockedMsg: "🎉 5問連続正解！🔥 テンションコード問題が解放されました！",
+        wrongMsg: "❌ 不正解。",
+        wrongStreakMsg: (w) => `❌ 不正解。[連続不正解: ${w}/2]`,
+        tensionDowngradeMsg: "❌ 2問連続不正解。基本コードモードに戻ります。",
+        replayCorrecting: (i) => `${i}音目：正解位置を再生中…`
+      },
+      en: {
+        settings: "⚙️ Settings",
+        langLabel: "English",
+        speedLabel: "Playback Speed",
+        speedSlow: "Slow (Default)",
+        speedFast: "Fast (Double)",
+        soundLabel: "Judgment Sound",
+        soundNone: "None (Default)",
+        soundExists: "On",
+        close: "Close",
+        qType: "Mode:",
+        optChord: "Chord",
+        optScale: "Scale (Jazz)",
+        noteCount: "Notes:",
+        opt2: "2 Notes",
+        opt3: "3 Notes",
+        opt4: "4 Notes",
+        firstNote: "1st Note:",
+        optRoot: "Fixed Root",
+        optRandom: "Random from Chord (Excl. Root)",
+        startBtn: "▶ Start Game",
+        replayBtn: "🔊 Listen Again",
+        viewResultBtn: "👁️ Show Answer",
+        playChordBtn: "🎸 Play Chord",
+        legendRoot: "Root Note / Key Note",
+        initialMsg: "Click 'Start Game' to begin",
+        chordTitleLabel: "CHORD",
+        scaleTitleLabel: "SCALE",
+        levelTension: (w) => `🔥 Tension Chords Unlocked! (Consecutive Wrong: ${w}/2 to downgrade)`,
+        levelBasic: (c) => `🎵 Basic Chord Mode (Consecutive Correct: ${c}/5 to unlock tension)`,
+        progressScale: (idx, total) => `Progress: ${idx}/${total}`,
+        progressChord: (corr, total) => `Correct: ${corr}/${total}`,
+        chordPlaying: "Playing chord...",
+        scalePlaying: (name) => `Playing key note (${name})...`,
+        firstNoteGuessPrompt: "1st Note: Select a note from the fretboard",
+        listenCarefully: (i, total) => `Listen carefully... (${i} / ${total})`,
+        guessNextPrompt: (curr, total) => `Click the next note (${curr} / ${total})`,
+        guessFirstPrompt: (total) => `Click ${total} notes in the order you hear them (1 / ${total})`,
+        correctMsg: "🎉 Correct!",
+        correctStreakMsg: (c) => `🎉 Correct! [${c}/5 Streak]`,
+        tensionUnlockedMsg: "🎉 5 Correct in a row! 🔥 Tension chords unlocked!",
+        wrongMsg: "❌ Incorrect.",
+        wrongStreakMsg: (w) => `❌ Incorrect. [Streak: ${w}/2]`,
+        tensionDowngradeMsg: "❌ 2 Incorrect in a row. Returning to Basic mode.",
+        replayCorrecting: (i) => `Note ${i}: Playing correct position...`
+      }
+    };
+
+    // 設定状態の管理（English OFFをデフォルト初期値に設定）
+    let appSettings = {
+      speed: 'slow', // 'slow' (デフォルト) / 'fast' (倍速)
+      sound: 'none', // 'none' (デフォルト) / 'exists'
+      lang: 'off'    // 'off' (デフォルト：日本語) / 'on' (English)
+    };
+
+    function t(key, ...args) {
+      const activeLang = appSettings.lang === 'on' ? 'en' : 'ja';
+      const dict = i18n[activeLang] || i18n.ja;
+      const val = dict[key];
+      if (typeof val === 'function') {
+        return val(...args);
+      }
+      return val || i18n.ja[key] || key;
+    }
+
+    function updateStaticTexts() {
+      document.querySelector('#modal-title-settings').textContent = t('settings');
+      document.querySelector('#label-lang-setting').textContent = t('langLabel');
+      document.querySelector('#lang-off-btn').textContent = appSettings.lang === 'on' ? 'OFF (Japanese)' : 'OFF (日本語)';
+      document.querySelector('#lang-on-btn').textContent = appSettings.lang === 'on' ? 'ON (English)' : 'ON (English)';
+
+      document.querySelector('#label-speed-setting').textContent = t('speedLabel');
+      document.querySelector('#speed-slow-btn').textContent = t('speedSlow');
+      document.querySelector('#speed-fast-btn').textContent = t('speedFast');
+      document.querySelector('#label-sound-setting').textContent = t('soundLabel');
+      document.querySelector('#sound-none-btn').textContent = t('soundNone');
+      document.querySelector('#sound-exists-btn').textContent = t('soundExists');
+      document.querySelector('#modal-close-btn').textContent = t('close');
+      
+      document.querySelector('#label-q-type').textContent = t('qType');
+      questionTypeSelect.options[0].textContent = t('optChord');
+      questionTypeSelect.options[1].textContent = t('optScale');
+
+      document.querySelector('#label-note-count').textContent = t('noteCount');
+      noteCountSelect.options[0].textContent = t('opt2');
+      noteCountSelect.options[1].textContent = t('opt3');
+      noteCountSelect.options[2].textContent = t('opt4');
+
+      document.querySelector('#label-first-note').textContent = t('firstNote');
+      firstNoteModeSelect.options[0].textContent = t('optRoot');
+      firstNoteModeSelect.options[1].textContent = t('optRandom');
+
+      startButton.textContent = t('startBtn');
+      if (game.phase === 'result') {
+        replayButton.textContent = t('viewResultBtn');
+      } else {
+        replayButton.textContent = t('replayBtn');
+      }
+      playChordBtn.textContent = t('playChordBtn');
+      document.querySelector('#legend-root-text').textContent = t('legendRoot');
+
+      if (game.phase === 'idle') {
+        setStatus(null, t('initialMsg'));
+      }
+
+      if (questionTypeSelect.value === 'chord') {
+        targetLabel.textContent = t('chordTitleLabel');
+      } else {
+        targetLabel.textContent = t('scaleTitleLabel');
+      }
+
+      updateLevelIndicator();
+      updateDeckCounterDisplay();
+    }
+
+    function updateSettingsUI() {
+      if (appSettings.lang === 'on') {
+        langOnBtn.classList.add('active');
+        langOffBtn.classList.remove('active');
+      } else {
+        langOffBtn.classList.add('active');
+        langOnBtn.classList.remove('active');
+      }
+
+      if (appSettings.speed === 'slow') {
+        speedSlowBtn.classList.add('active');
+        speedFastBtn.classList.remove('active');
+      } else {
+        speedFastBtn.classList.add('active');
+        speedSlowBtn.classList.remove('active');
+      }
+
+      if (appSettings.sound === 'none') {
+        soundNoneBtn.classList.add('active');
+        soundExistsBtn.classList.remove('active');
+      } else {
+        soundExistsBtn.classList.add('active');
+        soundNoneBtn.classList.remove('active');
+      }
+    }
+
+    openSettingsBtn.addEventListener('click', () => {
+      updateSettingsUI();
+      settingsModal.classList.add('active');
+    });
+
+    modalCloseBtn.addEventListener('click', () => {
+      settingsModal.classList.remove('active');
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.classList.remove('active');
+      }
+    });
+
+    langOffBtn.addEventListener('click', () => {
+      appSettings.lang = 'off';
+      updateSettingsUI();
+      updateStaticTexts();
+    });
+
+    langOnBtn.addEventListener('click', () => {
+      appSettings.lang = 'on';
+      updateSettingsUI();
+      updateStaticTexts();
+    });
+
+    speedSlowBtn.addEventListener('click', () => {
+      appSettings.speed = 'slow';
+      updateSettingsUI();
+    });
+
+    speedFastBtn.addEventListener('click', () => {
+      appSettings.speed = 'fast';
+      updateSettingsUI();
+    });
+
+    soundNoneBtn.addEventListener('click', () => {
+      appSettings.sound = 'none';
+      updateSettingsUI();
+    });
+
+    soundExistsBtn.addEventListener('click', () => {
+      appSettings.sound = 'exists';
+      updateSettingsUI();
+    });
+
+    // スピードに応じたウェイト・インターバル取得ヘルパー
+    function getAdjustedTime(baseMs) {
+      return appSettings.speed === 'fast' ? baseMs / 2 : baseMs;
+    }
 
     const NS = 'http://www.w3.org/2000/svg';
     const strings = [
@@ -539,9 +934,9 @@
       if (questionTypeSelect.value === 'scale') {
         const displayIndex = currentScaleIndex === 0 ? 1 : currentScaleIndex;
         const totalScales = jazzScaleDefinitions.length * 2;
-        deckCounter.textContent = `進捗: ${displayIndex}/${totalScales}`;
+        deckCounter.textContent = t('progressScale', displayIndex, totalScales);
       } else {
-        deckCounter.textContent = `正解数: ${chordCorrectCount}/${chordQuestionCount}`;
+        deckCounter.textContent = t('progressChord', chordCorrectCount, chordQuestionCount);
       }
     }
 
@@ -572,9 +967,9 @@
         return;
       }
       if (tensionUnlocked) {
-        levelIndicator.textContent = `🔥 テンションコード解放中！ (連続不正解: ${consecutiveWrong}/2 で難易度ダウン)`;
+        levelIndicator.textContent = t('levelTension', consecutiveWrong);
       } else {
-        levelIndicator.textContent = `🎵 基本コードモード (連続正解: ${consecutiveCorrect}/5 でテンション解放)`;
+        levelIndicator.textContent = t('levelBasic', consecutiveCorrect);
       }
     }
 
@@ -583,19 +978,30 @@
       if (mode === 'chord') {
         noteCountGroup.style.display = 'flex';
         firstNoteGroup.style.display = 'flex';
-        targetLabel.textContent = 'コード名';
+        targetLabel.textContent = t('chordTitleLabel');
         targetTitle.textContent = '---';
       } else {
         noteCountGroup.style.display = 'none';
         firstNoteGroup.style.display = 'none';
-        targetLabel.textContent = 'スケール名';
+        targetLabel.textContent = t('scaleTitleLabel');
         targetTitle.textContent = '---';
       }
       updateLevelIndicator();
       updateDeckCounterDisplay();
     }
 
-    questionTypeSelect.addEventListener('change', updateUIControls);
+    // 問題種別切り替え時の処理
+    questionTypeSelect.addEventListener('change', () => {
+      clearBoardMarks();
+      chordQuestionCount = 0;
+      chordCorrectCount = 0;
+      game.phase = 'idle';
+      game.target = [];
+      game.answers = [];
+      targetTitle.textContent = '---';
+      setStatus(null, t('initialMsg'));
+      updateUIControls();
+    });
 
     function setStatus(titleText, msgText, state = 'normal') {
       if (titleText !== null) targetTitle.textContent = titleText;
@@ -686,6 +1092,44 @@
       return () => {};
     }
 
+    // 正誤判定サウンド再生機能
+    function playJudgmentSound(isCorrect) {
+      if (appSettings.sound !== 'exists') return;
+      audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioContext.currentTime;
+
+      if (isCorrect) {
+        [ { freq: 523.25, time: 0, dur: 0.22 }, { freq: 783.99, time: 0.18, dur: 0.35 } ].forEach(note => {
+          const startTime = now + note.time;
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, startTime);
+          gain.gain.setValueAtTime(0.0001, startTime);
+          gain.gain.linearRampToValueAtTime(0.28, startTime + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + note.dur);
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start(startTime);
+          osc.stop(startTime + note.dur + 0.02);
+        });
+      } else {
+        [110, 116.5].forEach(freq => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(0.22, now + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start(now);
+          osc.stop(now + 0.38);
+        });
+      }
+    }
+
     function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.28) {
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
@@ -745,15 +1189,16 @@
     function playChord(midiNotes) {
       if (!midiNotes || midiNotes.length === 0) return;
       const sortedMidis = [...midiNotes].sort((a, b) => a - b);
+      const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
       
       sortedMidis.forEach((midi, idx) => {
         const isRoot = (midi % 12 === game.rootPitchIndex);
         if (isRoot) {
-          play(midi, 2.5, 0.4);
+          play(midi, 2.5 * speedFactor, 0.4);
         } else {
           setTimeout(() => {
-            play(midi, 1.4, 0.25);
-          }, idx * 45);
+            play(midi, 1.4 * speedFactor, 0.25);
+          }, idx * (45 * speedFactor));
         }
       });
     }
@@ -764,9 +1209,10 @@
       audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
 
       const sortedMidis = [...game.chordMidiNotes].sort((a, b) => a - b);
+      const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
 
-      const intervalMs = 280;
-      const sustainTime = 2.0;
+      const intervalMs = 280 * speedFactor;
+      const sustainTime = 2.0 * speedFactor;
       const startTime = audioContext.currentTime;
 
       sortedMidis.forEach((midi, index) => {
@@ -774,7 +1220,7 @@
         playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.28);
       });
 
-      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + 1200;
+      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + (1200 * speedFactor);
       await wait(totalWaitMs);
 
       playChordBtn.disabled = false;
@@ -788,8 +1234,9 @@
     function preview(cell, string, fret, showStatus = true, sustain = 0.56, showVisual = true, isCorrectStyle = false, isWrongStyle = false) {
       const midi = string.midi + fret;
       const note = noteName(midi);
-      if (showStatus) setStatus(null, `${string.name} 弦・${fret} フレット — ${note}`);
-      play(midi, sustain);
+      if (showStatus) setStatus(null, `${string.name} String / ${fret} Fret — ${note}`);
+      const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
+      play(midi, sustain * speedFactor);
       if (!showVisual) return;
       
       if (playingTimeoutId) {
@@ -815,7 +1262,7 @@
           lastPlayingCell = null;
         }
         playingTimeoutId = null;
-      }, 450);
+      }, getAdjustedTime(450));
     }
 
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -1067,16 +1514,16 @@
 
       if (game.mode === 'chord' && !isShowingResult) {
         highlightRootNotes(game.rootPitchIndex);
-        setStatus(null, `和音を再生中…`);
+        setStatus(null, t('chordPlaying'));
         playChord(game.chordMidiNotes);
-        await wait(1500);
+        await wait(getAdjustedTime(1500));
       } else if (game.mode === 'scale' && !isShowingResult) {
         highlightRootNotes(game.rootPitchIndex);
         const rootPitchName = pitchNames[game.rootPitchIndex];
-        setStatus(null, `キー音 (${rootPitchName}) を再生中…`);
-        const rootMidi = 60 + game.rootPitchIndex;
-        play(rootMidi, 1.8, 0.4);
-        await wait(1200);
+        setStatus(null, t('scalePlaying', rootPitchName));
+        const firstNoteMidi = game.target[0].midi;
+        play(firstNoteMidi, getAdjustedTime(1.8), 0.4);
+        await wait(getAdjustedTime(1200));
       }
 
       for (let i = 0; i < total; i++) {
@@ -1095,10 +1542,10 @@
         }
 
         const msg = isShowingResult
-          ? `${i + 1}音目：${activePos.string.name}弦・${activePos.fret}フレット (${noteName(activePos.midi)}) ${isNoteCorrect ? '✓ (正解)' : '✗ (正解音)'}`
+          ? t('replayCorrecting', i + 1)
           : (i === 0 
-              ? `1音目：${activePos.string.name}弦・${activePos.fret}フレット` 
-              : `よく聴いてください… (${i + 1} / ${total}音目)`);
+              ? t('firstNoteGuessPrompt') 
+              : t('listenCarefully', i + 1, total));
 
         setStatus(null, msg);
         
@@ -1118,10 +1565,10 @@
           activePos.cell.classList.add(isNoteCorrect ? 'correct' : 'wrong');
         }
 
-        await wait(beatMs * 1.3);
+        await wait(getAdjustedTime(beatMs * 1.3));
       }
 
-      await wait(400);
+      await wait(getAdjustedTime(400));
 
       if (previousPhase === 'result') {
         game.phase = 'result';
@@ -1130,8 +1577,8 @@
         game.phase = 'guess';
         const currentAnsLen = game.answers.length;
         const msg = currentAnsLen > 0
-          ? `次の音をクリックしてください（${currentAnsLen + 1} / ${total}）`
-          : `聴こえた順に、フレットを${total}つクリックしてください（1 / ${total}）`;
+          ? t('guessNextPrompt', currentAnsLen + 1, total)
+          : t('guessFirstPrompt', total);
         setStatus(null, msg);
       }
       startButton.disabled = false;
@@ -1143,6 +1590,12 @@
 
     function showResult(isNewAnswer = true) {
       const correct = game.answers.every((ans, idx) => ans.midi === game.target[idx].midi);
+
+      if (isNewAnswer) {
+        setTimeout(() => {
+          playJudgmentSound(correct);
+        }, 500);
+      }
 
       if (isNewAnswer && game.mode === 'chord') {
         chordQuestionCount++;
@@ -1165,58 +1618,54 @@
 
       targetTitle.textContent = game.titleName;
       
-      if (game.mode === 'chord') {
-        playChordBtn.style.display = 'inline-block';
-        if (correct) {
-          if (isNewAnswer) {
-            if (!tensionUnlocked) {
-              consecutiveCorrect++;
-              if (consecutiveCorrect >= 5) {
-                tensionUnlocked = true;
-                consecutiveWrong = 0;
-                setStatus(null, `🎉 5問連続正解！🔥 テンションコード問題が解放されました！`, 'correct');
-              } else {
-                setStatus(null, `🎉 正解！ [${consecutiveCorrect}/5 連続正解]`, 'correct');
-              }
-            } else {
+      if (correct) {
+        if (isNewAnswer && game.mode === 'chord') {
+          if (!tensionUnlocked) {
+            consecutiveCorrect++;
+            if (consecutiveCorrect >= 5) {
+              tensionUnlocked = true;
               consecutiveWrong = 0;
-              setStatus(null, `🎉 正解！`, 'correct');
+              setStatus(null, t('tensionUnlockedMsg'), 'correct');
+            } else {
+              setStatus(null, t('correctStreakMsg', consecutiveCorrect), 'correct');
             }
           } else {
-            setStatus(null, `🎉 正解！`, 'correct');
+            consecutiveWrong = 0;
+            setStatus(null, t('correctMsg'), 'correct');
           }
         } else {
-          if (isNewAnswer) {
-            if (tensionUnlocked) {
-              consecutiveWrong++;
-              if (consecutiveWrong >= 2) {
-                tensionUnlocked = false;
-                consecutiveCorrect = 0;
-                consecutiveWrong = 0;
-                setStatus(null, `❌ 2問連続不正解。基本コードモードに戻ります。`, 'wrong');
-              } else {
-                setStatus(null, `❌ 不正解。[連続不正解: 1/2]`, 'wrong');
-              }
-            } else {
+          setStatus(null, t('correctMsg'), 'correct');
+        }
+      } else {
+        if (isNewAnswer && game.mode === 'chord') {
+          if (tensionUnlocked) {
+            consecutiveWrong++;
+            if (consecutiveWrong >= 2) {
+              tensionUnlocked = false;
               consecutiveCorrect = 0;
-              setStatus(null, `❌ 不正解。`, 'wrong');
+              consecutiveWrong = 0;
+              setStatus(null, t('tensionDowngradeMsg'), 'wrong');
+            } else {
+              setStatus(null, t('wrongStreakMsg', consecutiveWrong), 'wrong');
             }
           } else {
-            setStatus(null, `❌ 不正解。`, 'wrong');
+            consecutiveCorrect = 0;
+            setStatus(null, t('wrongMsg'), 'wrong');
           }
+        } else {
+          setStatus(null, t('wrongMsg'), 'wrong');
         }
+      }
+
+      if (game.mode === 'chord') {
+        playChordBtn.style.display = 'inline-block';
         updateLevelIndicator();
       } else {
         playChordBtn.style.display = 'none';
-        if (correct) {
-          setStatus(null, `🎉 正解！`, 'correct');
-        } else {
-          setStatus(null, `❌ 不正解。`, 'wrong');
-        }
       }
       
       game.phase = 'result';
-      replayButton.textContent = '👁️ 正解を確認する';
+      replayButton.textContent = t('viewResultBtn');
       replayButton.disabled = false;
     }
 
@@ -1232,13 +1681,12 @@
       position.cell.classList.add('selected');
 
       if (game.answers.length < targetLen) {
-        setStatus(null, `次の音をクリックしてください（${game.answers.length + 1} / ${targetLen}）`);
+        setStatus(null, t('guessNextPrompt', game.answers.length + 1, targetLen));
       } else {
         showResult(true);
       }
     }
 
-    // ハイライト保持・切り替え制御用変数
     let currentHeldPosition = null;
 
     function startHeldNote(position) {
@@ -1262,8 +1710,6 @@
       if (game.phase === 'guess') {
         position.cell.classList.add('playing');
       }
-      
-      setStatus(null, `${position.string.name} 弦・${position.fret} フレット — ${noteName(position.midi)}`);
     }
 
     function stopHeldNote(position) {
@@ -1278,17 +1724,17 @@
 
     async function startGame() {
       clearBoardMarks();
-      replayButton.textContent = '🔊 もう一度聴く';
+      replayButton.textContent = t('replayBtn');
       const mode = questionTypeSelect.value;
       let q;
 
       if (mode === 'chord') {
-        targetLabel.textContent = 'コード名';
+        targetLabel.textContent = t('chordTitleLabel');
         const count = parseInt(noteCountSelect.value, 10);
         const isRootFirst = firstNoteModeSelect.value === 'root';
         q = makeChordQuestion(count, isRootFirst);
       } else {
-        targetLabel.textContent = 'スケール名';
+        targetLabel.textContent = t('scaleTitleLabel');
         q = makeScaleQuestion();
       }
 
@@ -1310,7 +1756,11 @@
     startButton.addEventListener('click', startGame);
 
     replayButton.addEventListener('click', async () => {
-      if (game.phase === 'guess' || game.phase === 'result') {
+      if (game.phase === 'guess') {
+        game.answers = [];
+        positions.forEach(p => p.cell.classList.remove('selected'));
+        await playQuestion();
+      } else if (game.phase === 'result') {
         await playQuestion();
       }
     });
@@ -1338,11 +1788,10 @@
       name.textContent = string.label;
       svg.append(name);
       
-      // 開放弦(0フレット)から全15フレットまで同様に定義
       for (let fret = 0; fret <= frets; fret++) {
         const left = fret === 0 ? x0 - 74 : fretX(fret - 1);
         const right = fretX(fret);
-        const cell = node('g', { class: 'cell', tabindex: '0', role: 'button', 'aria-label': `${string.name}弦 ${fret}フレット ${noteName(string.midi + fret)}` });
+        const cell = node('g', { class: 'cell', tabindex: '0', role: 'button', 'aria-label': `${string.name} string ${fret} fret ${noteName(string.midi + fret)}` });
         cell.append(node('rect', { x: left, y: y - 25, width: right - left, height: 50, rx: 2 }));
         const label = node('text', { x: (left + right) / 2, y: y + 5, class: 'note' });
         label.textContent = noteName(string.midi + fret);
@@ -1358,7 +1807,6 @@
         };
         positions.push(position);
         
-        // タッチ(指)での入力イベント処理
         cell.addEventListener('pointerdown', event => {
           if (game.phase === 'playing') return;
           event.preventDefault();
@@ -1367,14 +1815,10 @@
             cell.setPointerCapture(event.pointerId);
           } catch (e) {}
 
-          // 回答選択処理（問題解法フェーズのみ動作）
           choose(position, false);
-
-          // タッチ開始時に手動リリース用の音・ハイライト再生
           startHeldNote(position);
         });
 
-        // 指を離した時・領域外に出た時・キャンセルの処理
         const handlePointerUp = event => {
           try {
             if (cell.hasPointerCapture && cell.hasPointerCapture(event.pointerId)) {
@@ -1399,6 +1843,7 @@
     });
 
     updateUIControls();
+    updateSettingsUI();
   </script>
 </body>
 </html>
