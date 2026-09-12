@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Electric Bass Fretboard - Training</title>
   <style>
     :root { 
@@ -10,11 +10,17 @@
       font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; 
     }
     html, body {
-      /* 画面全体のダブルタップ拡大・ピンチ操作を防止 */
-      touch-action: manipulation;
+      /* ピンチ操作（拡大・縮小）のみ許可 */
+      touch-action: pinch-zoom;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #11100f;
     }
     * { 
       box-sizing: border-box; 
@@ -24,15 +30,38 @@
       user-select: none; 
       -webkit-tap-highlight-color: transparent; 
     }
+
+    /* iPhone等の縦画面起動時に全画面横向きに回転・フィットさせるラッパー */
+    .app-viewport-wrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+    }
+
+    /* 縦画面（Portrait）時の横向き回転処理 */
+    @media screen and (orientation: portrait) {
+      .app-viewport-wrapper {
+        width: 100vh;
+        height: 100vw;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
+      }
+    }
+
     body { 
-      margin: 0; 
-      min-height: 100vh; 
-      display: grid; 
-      place-items: center; 
-      background: #11100f; 
       color: #f7eee4; 
     }
-    main { width: min(1050px, 100%); padding: 12px 16px 16px; }
+    main { 
+      width: min(1050px, 100%); 
+      padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      margin: auto;
+    }
     h1 { margin: 0; font-size: clamp(1.2rem, 2.5vw, 1.6rem); letter-spacing: .02em; }
     p { color: #beb5a9; margin: 4px 0 10px; font-size: 0.85rem; line-height: 1.3; }
 
@@ -299,7 +328,7 @@
     }
 
     .board-shell { overflow-x: auto; border-radius: 10px; box-shadow: 0 16px 40px #0008; }
-    #fretboard { display: block; min-width: 900px; width: 100%; height: auto; background: #372018; touch-action: manipulation; }
+    #fretboard { display: block; min-width: 900px; width: 100%; height: auto; background: #372018; touch-action: pinch-zoom; }
     .cell { cursor: pointer; }
     .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
@@ -343,73 +372,75 @@
   </style>
 </head>
 <body>
-  <main>
-    <h1>Electric Bass Ear Training Game</h1>
-    <p id="description-text">モードを選択して「ゲームを始める」を押してください。</p>
-    
-    <div class="controls">
-      <div class="settings-row">
-        <div class="control-group">
-          <label for="question-type">問題種別:</label>
-          <select id="question-type">
-            <option value="chord" selected>コード</option>
-            <option value="scale">スケール（ジャズ）</option>
-          </select>
+  <div class="app-viewport-wrapper">
+    <main>
+      <h1>Electric Bass Ear Training Game</h1>
+      <p id="description-text">モードを選択して「ゲームを始める」を押してください。</p>
+      
+      <div class="controls">
+        <div class="settings-row">
+          <div class="control-group">
+            <label for="question-type">問題種別:</label>
+            <select id="question-type">
+              <option value="chord" selected>コード</option>
+              <option value="scale">スケール（ジャズ）</option>
+            </select>
+          </div>
+
+          <div class="control-group" id="note-count-group">
+            <label for="note-count">音数:</label>
+            <select id="note-count">
+              <option value="2">2音</option>
+              <option value="3" selected>3音</option>
+              <option value="4">4音</option>
+            </select>
+          </div>
+
+          <div class="control-group" id="first-note-group">
+            <label for="first-note-mode">1音目の音:</label>
+            <select id="first-note-mode">
+              <option value="root" selected>ルート音固定</option>
+              <option value="random">構成音からランダム（ルート除外）</option>
+            </select>
+          </div>
         </div>
 
-        <div class="control-group" id="note-count-group">
-          <label for="note-count">音数:</label>
-          <select id="note-count">
-            <option value="2">2音</option>
-            <option value="3" selected>3音</option>
-            <option value="4">4音</option>
-          </select>
-        </div>
+        <div class="top-controls">
+          <div class="action-row">
+            <button id="start" class="primary-btn" type="button">▶ ゲームを始める</button>
+            <button id="replay" class="secondary" type="button" disabled>🔊 もう一度聴く</button>
+          </div>
 
-        <div class="control-group" id="first-note-group">
-          <label for="first-note-mode">1音目の音:</label>
-          <select id="first-note-mode">
-            <option value="root" selected>ルート音固定</option>
-            <option value="random">構成音からランダム（ルート除外）</option>
-          </select>
-        </div>
-      </div>
+          <div class="status-container">
+            <div id="level-indicator"></div>
+            
+            <div id="status-box" aria-live="polite">
+              <div class="status-title-card">
+                <div class="status-label" id="target-label">CHORD / SCALE</div>
+                <div id="target-title">---</div>
+              </div>
 
-      <div class="top-controls">
-        <div class="action-row">
-          <button id="start" class="primary-btn" type="button">▶ ゲームを始める</button>
-          <button id="replay" class="secondary" type="button" disabled>🔊 もう一度聴く</button>
-        </div>
-
-        <div class="status-container">
-          <div id="level-indicator"></div>
-          
-          <div id="status-box" aria-live="polite">
-            <div class="status-title-card">
-              <div class="status-label" id="target-label">CHORD / SCALE</div>
-              <div id="target-title">---</div>
-            </div>
-
-            <div class="status-message-card">
-              <span id="status-message">「ゲームを始める」を押してください</span>
-              <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
+              <div class="status-message-card">
+                <span id="status-message">「ゲームを始める」を押してください</span>
+                <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <div class="board-shell">
-      <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
-    </div>
-    <div class="hint">
-      <div class="hint-left">
-        <span>1オクターブ上のチューニング：E3 · A3 · D4 · G4 ／ 0〜15フレット</span>
-        <span class="legend-item"><span class="legend-dot"></span> ルート音（根音）/ キー音</span>
+      
+      <div class="board-shell">
+        <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
       </div>
-      <div id="deck-counter">正解数: 0/0</div>
-    </div>
-  </main>
+      <div class="hint">
+        <div class="hint-left">
+          <span>1オクターブ上のチューニング：E3 · A3 · D4 · G4 ／ 0〜15フレット</span>
+          <span class="legend-item"><span class="legend-dot"></span> ルート音（根音）/ キー音</span>
+        </div>
+        <div id="deck-counter">正解数: 0/0</div>
+      </div>
+    </main>
+  </div>
 
   <script>
     // iOS Safariでのコンテキストメニュー・長押しルーペ表示防止
@@ -417,7 +448,7 @@
       e.preventDefault();
     }, { passive: false });
 
-    // iOS Safariでのダブルタップによる拡大（ズーム）を無効化
+    // iOS Safariでのダブルタップによる拡大（ズーム）を無効化し、ピンチ操作のみ許可
     let lastTouchEnd = 0;
     document.addEventListener('touchend', function(event) {
       const now = (new Date()).getTime();
@@ -425,11 +456,6 @@
         event.preventDefault();
       }
       lastTouchEnd = now;
-    }, { passive: false });
-
-    // 2本指以上でのピンチイン・ピンチアウト拡大を無効化
-    document.addEventListener('gesturestart', function(event) {
-      event.preventDefault();
     }, { passive: false });
 
     const svg = document.querySelector('#fretboard');
