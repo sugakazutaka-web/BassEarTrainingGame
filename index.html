@@ -34,13 +34,13 @@
       -webkit-tap-highlight-color: transparent; 
     }
 
-    /* アプリ全体を保持するビューポートラッパー */
+    /* アプリ全体を保持するビューポートラッパー：左端が絶対にずれないように調整 */
     .app-viewport-wrapper {
       width: 100%;
       min-height: 100%;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      justify-content: flex-start; /* 左端を固定 */
+      align-items: flex-start;
       overflow: auto;
     }
 
@@ -69,7 +69,7 @@
       width: 1000px;
       min-width: 1000px;
       padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-      margin: auto;
+      margin: 0; /* 中央寄せを解除し、左端を維持 */
     }
 
     /* コントロールエリアのレイアウト */
@@ -303,7 +303,7 @@
       box-shadow: 0 16px 40px #0008; 
       width: 900px;
       min-width: 900px;
-      margin: 0 auto;
+      margin: 0; /* 左寄せに変更 */
     }
     #fretboard { 
       display: block; 
