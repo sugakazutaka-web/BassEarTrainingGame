@@ -1017,18 +1017,19 @@
       oscSub.type = 'sine';
       oscSub.frequency.setValueAtTime(subFreq, now);
 
+      // --- クリックノイズ対策：アタック時間を0.015秒〜0.02秒に滑らかに拡張 ---
       gain1.gain.setValueAtTime(0.0001, now);
-      gain1.gain.linearRampToValueAtTime(volume, now + 0.003);
-      gain1.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.08);
+      gain1.gain.linearRampToValueAtTime(volume, now + 0.018);
+      gain1.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.09);
 
       gain2.gain.setValueAtTime(0.0001, now);
-      gain2.gain.linearRampToValueAtTime(volume * 0.45, now + 0.002);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+      gain2.gain.linearRampToValueAtTime(volume * 0.45, now + 0.015);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
 
       const subVolume = volume * 0.38;
       gainSub.gain.setValueAtTime(0.0001, now);
-      gainSub.gain.linearRampToValueAtTime(subVolume, now + 0.005);
-      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.6, now + 0.1);
+      gainSub.gain.linearRampToValueAtTime(subVolume, now + 0.02);
+      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.6, now + 0.11);
 
       osc1.connect(gain1);
       osc2.connect(gain2);
@@ -1048,18 +1049,21 @@
           const releaseAt = audioContext.currentTime;
           masterGain.gain.cancelScheduledValues(releaseAt);
           masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), releaseAt);
-          masterGain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.1);
-          osc1.stop(releaseAt + 0.12);
-          osc2.stop(releaseAt + 0.12);
-          oscSub.stop(releaseAt + 0.12);
+          masterGain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.12);
+          osc1.stop(releaseAt + 0.14);
+          osc2.stop(releaseAt + 0.14);
+          oscSub.stop(releaseAt + 0.14);
         };
       }
 
+      // --- 終了時（リリース時）のフェードアウトを追加し、プツッという音を防止 ---
       gain1.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
       gainSub.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-      osc1.stop(now + sustain + 0.02);
-      osc2.stop(now + sustain + 0.02);
-      oscSub.stop(now + sustain + 0.02);
+
+      osc1.stop(now + sustain + 0.04);
+      osc2.stop(now + sustain + 0.04);
+      oscSub.stop(now + sustain + 0.04);
       
       return () => {};
     }
@@ -1076,13 +1080,16 @@
           const gain = audioContext.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(note.freq, startTime);
+          
+          // --- 判定サウンドのアタック・リリースを滑らかに ---
           gain.gain.setValueAtTime(0.0001, startTime);
-          gain.gain.linearRampToValueAtTime(0.28, startTime + 0.01);
+          gain.gain.linearRampToValueAtTime(0.28, startTime + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, startTime + note.dur);
+
           osc.connect(gain);
           gain.connect(audioContext.destination);
           osc.start(startTime);
-          osc.stop(startTime + note.dur + 0.02);
+          osc.stop(startTime + note.dur + 0.03);
         });
       } else {
         [110, 116.5].forEach(freq => {
@@ -1090,9 +1097,11 @@
           const gain = audioContext.createGain();
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(freq, now);
+
           gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.linearRampToValueAtTime(0.22, now + 0.01);
+          gain.gain.linearRampToValueAtTime(0.22, now + 0.015);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
           osc.connect(gain);
           gain.connect(audioContext.destination);
           osc.start(now);
@@ -1124,18 +1133,19 @@
       oscSub.type = 'sine';
       oscSub.frequency.setValueAtTime(subFreq, startTime);
 
+      // --- アルペジオ・ギターノートのアタック時間を滑らかに拡張 ---
       gain1.gain.setValueAtTime(0.0001, startTime);
-      gain1.gain.linearRampToValueAtTime(volume, startTime + 0.004);
+      gain1.gain.linearRampToValueAtTime(volume, startTime + 0.018);
       gain1.gain.exponentialRampToValueAtTime(volume * 0.4, startTime + 0.12);
       gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
       gain2.gain.setValueAtTime(0.0001, startTime);
-      gain2.gain.linearRampToValueAtTime(volume * 0.35, startTime + 0.002);
+      gain2.gain.linearRampToValueAtTime(volume * 0.35, startTime + 0.015);
       gain2.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.09);
 
       const subVolume = volume * 0.35;
       gainSub.gain.setValueAtTime(0.0001, startTime);
-      gainSub.gain.linearRampToValueAtTime(subVolume, startTime + 0.006);
+      gainSub.gain.linearRampToValueAtTime(subVolume, startTime + 0.02);
       gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.5, startTime + 0.14);
       gainSub.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
@@ -1152,9 +1162,9 @@
       osc2.start(startTime);
       oscSub.start(startTime);
 
-      osc1.stop(startTime + duration + 0.02);
-      osc2.stop(startTime + duration + 0.02);
-      oscSub.stop(startTime + duration + 0.02);
+      osc1.stop(startTime + duration + 0.04);
+      osc2.stop(startTime + duration + 0.04);
+      oscSub.stop(startTime + duration + 0.04);
     }
 
     function playChord(midiNotes) {
