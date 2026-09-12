@@ -294,8 +294,7 @@
     .board-shell { overflow-x: auto; border-radius: 10px; box-shadow: 0 16px 40px #0008; }
     #fretboard { display: block; min-width: 900px; width: 100%; height: auto; background: #372018; touch-action: manipulation; }
     .cell { cursor: pointer; }
-    .cell rect { fill: transparent; transition: fill .1s ease; }
-    .cell:hover rect, .cell:focus rect { fill: #ffd27430; outline: none; }
+    .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
     .cell.playing rect { fill: #ffbd3f8c !important; }
     .cell.playing-correct rect { fill: #87e39ab3 !important; stroke: #87e39a; stroke-width: 2px; }
@@ -1213,14 +1212,24 @@
     let currentHeldPosition = null;
 
     function startHeldNote(position) {
-      // 次のフレットがタッチされた瞬間に前にタッチされたフレットのハイライトと音を停止
+      // preview等のタイマー発火が残っていれば解除
+      if (playingTimeoutId) {
+        clearTimeout(playingTimeoutId);
+        playingTimeoutId = null;
+      }
+      if (lastPlayingCell) {
+        lastPlayingCell.classList.remove('playing', 'playing-correct', 'playing-wrong');
+        lastPlayingCell = null;
+      }
+
+      // 別のフレットが押された場合は前のフレットを消灯・消音
       if (currentHeldPosition && currentHeldPosition !== position) {
         stopHeldNote(currentHeldPosition);
       }
       currentHeldPosition = position;
 
       position.stopHeld?.();
-      // sustain に null を渡すことで、指を離すまで持続して発音
+      // sustain に null を渡すことで指を離すまで持続発音
       position.stopHeld = play(position.midi, null);
       position.cell.classList.add('playing');
       setStatus(null, `${position.string.name} 弦・${position.fret} フレット — ${noteName(position.midi)}`);
