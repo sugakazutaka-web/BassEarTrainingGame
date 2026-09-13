@@ -2,407 +2,68 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Electric Bass Fretboard - Training</title>
   <style>
-    :root { 
-      color-scheme: dark; 
-      font-family: ui-rounded, "Hiragino Sans", system-ui, sans-serif; 
-    }
-
-    html, body {
-      /* ピンチ操作（拡大・縮小）のみ許可 */
-      touch-action: pinch-zoom;
-      -webkit-touch-callout: none !important;
-      -webkit-user-select: none !important;
-      user-select: none !important;
-      -webkit-text-size-adjust: 100%;
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto; /* ピンチズーム時にスクロールできるようにする */
-      background: #11100f;
-    }
-
-    * { 
-      box-sizing: border-box; 
-      /* 画面全体でテキスト選択と長押しメニュー・ルーペ表示を完全に無効化 */
-      -webkit-touch-callout: none !important; 
-      -webkit-user-select: none !important; 
-      user-select: none !important; 
-      -webkit-tap-highlight-color: transparent; 
-    }
-
-    /* アプリ全体を保持するビューポートラッパー：左端が絶対にずれないように調整 */
-    .app-viewport-wrapper {
-      width: 100%;
-      min-height: 100%;
-      display: flex;
-      justify-content: flex-start; /* 左端を固定 */
-      align-items: flex-start;
-      overflow: auto;
-      -webkit-touch-callout: none !important;
-    }
-
-    /* 
-      iPhoneなどのモバイル端末（タッチデバイス）の縦画面（Portrait）時
-      回転軸とコンテナの基準位置を修正し、左側が切れずにスクロール可能にする
-    */
-    @media screen and (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
-      .app-viewport-wrapper {
-        width: 100vh;
-        min-height: 100vw;
-        position: absolute;
-        top: 0;
-        left: 100vw;
-        transform: rotate(90deg);
-        transform-origin: top left;
-      }
-    }
-
-    body { 
-      color: #f7eee4; 
-    }
-
-    /* フレットボードの幅（900px）にメイン幅を合わせ、右端を揃える */
-    main { 
-      width: 900px;
-      min-width: 900px;
-      padding: max(6px, env(safe-area-inset-top)) 0 max(6px, env(safe-area-inset-bottom)) 0;
-      margin: 0; /* 中央寄せを解除し、左端を維持 */
-    }
-
-    /* コントロールエリアのレイアウト */
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 0 0 8px;
-    }
-    .settings-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: nowrap;
-      align-items: center;
-      padding: 4px 0;
-      position: relative; /* ポップアップメニューの基準位置 */
-    }
-
-    /* 「ゲームを始める」ボタンとステータス枠を同段に配置するレイアウト */
-    .top-controls {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      width: 100%;
-    }
-    .action-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    .control-group { 
-      display: flex; 
-      align-items: center; 
-      gap: 6px; 
-      font-weight: 700; 
-      font-size: 0.95rem; /* 少し大きく */
-    }
-    select { 
-      appearance: none; 
-      background: #26221f; 
-      color: #ffca75; 
-      border: 1px solid #ffca75; 
-      border-radius: 6px; 
-      padding: 6px 28px 6px 10px; /* 少し大きく */
-      font: inherit; 
-      font-weight: 700; 
-      font-size: 0.92rem;
-      cursor: pointer; 
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffca75'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); 
-      background-repeat: no-repeat; 
-      background-position: right 8px center; 
-      background-size: 16px; 
-    }
-    
-    /* ベースボタン */
-    button { 
-      appearance: none; 
-      border: 1px solid #ffca75; 
-      border-radius: 6px; 
-      padding: 6px 12px; 
-      color: #17110a; 
-      background: #ffca75; 
-      font: inherit; 
-      font-weight: 800; 
-      cursor: pointer; 
-      transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease; 
-      white-space: nowrap;
-    }
-    button:active { transform: scale(0.96) !important; }
-
-    /* 「ゲームを始める」プライマリボタン */
-    button.primary-btn {
-      background: linear-gradient(135deg, #ffb300, #ff8f00);
-      border: 1px solid #ffcc80;
-      color: #0d0905;
-      font-size: 0.95rem;
-      padding: 8px 16px;
-      box-shadow: 0 3px 12px rgba(255, 143, 0, 0.45);
-      letter-spacing: 0.03em;
-    }
-    button.primary-btn:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ffc107, #ffa000);
-      box-shadow: 0 4px 15px rgba(255, 143, 0, 0.65);
-      transform: translateY(-1px);
-    }
-
-    /* 「もう一度聴く/正解を確認する」ボタン */
-    button.secondary { 
-      color: #17110a; 
-      background: #e0a953; 
-      border: 1px solid #ffca75;
-      padding: 8px 12px;
-      font-size: 0.88rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-    button.secondary:hover:not(:disabled) {
-      background: #ebd08d;
-      box-shadow: 0 3px 10px rgba(255, 202, 117, 0.3);
-    }
-
-    /* 設定ボタン */
-    button.settings-btn {
-      background: #26221f;
-      color: #ffca75;
-      border: 1px solid #ffca75;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 6px 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: 0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    button.settings-btn:hover {
-      background: #352f2a;
-    }
-
-    button.small-btn {
-      padding: 4px 8px;
-      font-size: 0.78rem;
-      border-radius: 5px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    button:disabled, select:disabled { opacity: .45; cursor: wait; box-shadow: none !important; transform: none !important; }
-
-    /* --- 設定メニュー（設定ボタンの真下に出るポップアップ） --- */
-    .settings-popup {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      margin-top: 6px;
-      background: #1c1815;
-      border: 1.5px solid #ffca75;
-      border-radius: 10px;
-      padding: 14px 16px;
-      width: 300px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-      z-index: 1000;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .settings-popup.active {
-      display: flex;
-    }
-    .settings-popup h3 {
-      margin: 0 0 2px 0;
-      color: #ffca75;
-      font-size: 0.98rem;
-      border-bottom: 1px solid rgba(255,202,117,0.2);
-      padding-bottom: 6px;
-    }
-    .setting-item {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .setting-item label {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #e0d0b8;
-    }
-    .setting-options {
-      display: flex;
-      gap: 6px;
-    }
-    .setting-opt-btn {
-      flex: 1;
-      padding: 6px;
-      background: #26221f;
-      color: #d0c0a8;
-      border: 1px solid #55483c;
-      border-radius: 5px;
-      font-weight: 700;
-      font-size: 0.82rem;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-    .setting-opt-btn.active {
-      background: #ffca75;
-      color: #17110a;
-      border-color: #ffca75;
-      box-shadow: 0 2px 6px rgba(255,202,117,0.3);
-    }
-
-    /* --- status エリア --- */
-    .status-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-    #level-indicator {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #ffca75;
-      padding-left: 2px;
-      min-height: 1.1em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    #status-box {
-      width: 100%;
-      min-height: 44px;
-      padding: 4px 8px;
-      border-radius: 8px;
-      background: rgba(255, 202, 117, 0.05);
-      border: 1.5px solid rgba(255, 202, 117, 0.25);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    /* 正解時のスタイル */
-    #status-box.status-correct {
-      background: rgba(135, 227, 154, 0.1);
-      border-color: #87e39a;
-      box-shadow: 0 0 15px rgba(135, 227, 154, 0.3);
-      animation: status-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    #status-box.status-correct .status-title-card,
-    #status-box.status-correct .status-message-card {
-      border-color: rgba(135, 227, 154, 0.35);
-      background: rgba(135, 227, 154, 0.08);
-    }
-    #status-box.status-correct #target-title { color: #87e39a; }
-    #status-box.status-correct #status-message { color: #a3f7b5; }
-
-    /* 不正解時のスタイル */
-    #status-box.status-wrong {
-      background: rgba(242, 126, 114, 0.1);
-      border-color: #f27e72;
-      box-shadow: 0 0 15px rgba(242, 126, 114, 0.25);
-    }
-    #status-box.status-wrong .status-title-card,
-    #status-box.status-wrong .status-message-card {
-      border-color: rgba(242, 126, 114, 0.35);
-      background: rgba(242, 126, 114, 0.08);
-    }
-    #status-box.status-wrong #target-title { color: #f27e72; }
-    #status-box.status-wrong #status-message { color: #ff9d93; }
-
-    @keyframes status-pop {
-      0% { transform: scale(0.98); }
-      50% { transform: scale(1.01); }
-      100% { transform: scale(1); }
-    }
-
-    .status-title-card {
-      flex: 0 1 auto;
-      min-width: 120px;
-      min-height: 36px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(255, 202, 117, 0.08);
-      border: 1px solid rgba(255, 202, 117, 0.2);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 0px;
-      transition: all 0.3s ease;
-    }
-    .status-label {
-      font-size: 0.62rem;
-      font-weight: 700;
-      color: #beb5a9;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    #target-title {
-      font-size: 0.92rem;
-      font-weight: 900;
-      color: #ffca75;
-      line-height: 1.2;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    .status-message-card {
-      flex: 1;
-      min-height: 36px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(255, 202, 117, 0.04);
-      border: 1px solid rgba(255, 202, 117, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      transition: all 0.3s ease;
-      min-width: 0;
-    }
-    #status-message {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #ffe3b3;
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* フレットボードの固定サイズ設定 */
-    .board-shell { 
-      overflow-x: auto; 
-      border-radius: 10px; 
-      box-shadow: 0 16px 40px #0008; 
-      width: 900px;
-      min-width: 900px;
-      margin: 0; /* 左寄せに変更 */
-      -webkit-touch-callout: none !important;
-    }
-    #fretboard { 
-      display: block; 
-      width: 900px; 
-      height: 300px; 
-      background: #372018; 
-      touch-action: pinch-zoom; 
-      -webkit-touch-callout: none !important;
-    }
-
+:root { --orange:#e6bd89; --orange-deep:#df7f2b; --accent-border:#826649; --board-crop:38.8235294117647px; color-scheme:dark; font-family:ui-rounded,"Hiragino Sans",system-ui,sans-serif; background:#181613; color:#f5f2e9; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { margin:0; -webkit-text-size-adjust:100%; }
+.app-viewport-wrapper { width:100%; }
+main { width:100%; max-width:940px; margin:auto; padding:0 max(12px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+.controls { position:sticky; top:0; z-index:20; padding:max(10px,env(safe-area-inset-top)) 0 6px; background:#181613; display:flex; flex-direction:column; gap:10px; }
+.top-controls { display:flex; flex-direction:column; gap:8px; }
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; }
+button,select { font:inherit; font-size:16px; border-radius:12px; min-height:46px; border:1px solid #49483e; padding:9px 10px; touch-action:manipulation; }
+button { background:linear-gradient(180deg,#302820,#29231e); color:var(--orange); border-color:var(--accent-border); font-weight:750; cursor:pointer; }
+button.primary-btn { background:linear-gradient(180deg,#e58b3a,var(--orange-deep)); border-color:#e99c58; color:#241406; box-shadow:0 2px 5px #0003; }
+button.secondary { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; }
+button:active { filter:brightness(.85); }
+button:disabled,select:disabled { opacity:.45; cursor:default; }
+button:focus-visible,select:focus-visible,.cell:focus-visible { outline:3px solid #9ddcff; outline-offset:2px; }
+select { border-width:2px; background:#28231e; color:var(--orange); border-color:var(--accent-border); width:100%; min-width:0; }
+.status-container { width:100%; display:flex; flex-direction:column; gap:6px; }
+.chord-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#28221c; border:2px solid #594735; padding:10px 12px; border-radius:14px; min-height:65px; }
+.status-label { font-size:10px; letter-spacing:.12em; color:#b7a590; }
+#target-title { font-size:21px; font-weight:800; color:var(--orange); overflow-wrap:anywhere; }
+.small-btn { font-size:13px; flex-shrink:0; }
+#play-chord-arpeggio { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#17110a; }
+#level-indicator { font-size:15px; white-space:pre-line; margin-top:10px; color:#b7ac9c; line-height:1.5; }
+#status-box { min-height:65px; margin:0; padding:12px; border:2px solid #494038; border-radius:14px; background:#24201b; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:800; }
+#status-box.status-correct { color:#99e6ad; border-color:#99e6ad; background:#213428; }
+#status-box.status-wrong { color:#ff9b91; border-color:#ff9b91; background:#382521; }
+.settings-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; position:relative; }
+.control-group { display:flex; align-items:center; gap:6px; font-size:12px; min-width:0; }
+.control-group label { flex-shrink:0; }
+#first-note-group { flex:1 1 100%; }
+#note-count-group { flex:1; }
+.settings-btn { font-size:13px; border-width:2px; }
+.settings-popup { display:none; position:absolute; top:52px; left:0; z-index:30; width:min(340px,100%); max-height:55dvh; overflow:auto; padding:16px; background:#25201b; border:1px solid var(--accent-border); border-radius:16px; box-shadow:0 12px 40px #0009; }
+.settings-popup.active { display:flex; flex-direction:column; gap:16px; }
+.settings-popup h3 { margin:0; font-size:16px; }
+.setting-item label { display:block; margin-bottom:6px; font-size:13px; }
+.setting-options { display:flex; gap:6px; }
+.setting-opt-btn { flex:1; font-size:13px; border-width:2px; }
+.setting-opt-btn.active { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; box-shadow:none; }
+.board-shell { width:100%; overflow-x:auto; overflow-y:hidden; border-radius:14px; background:#251d17; overscroll-behavior-x:contain; touch-action:none; scrollbar-width:none; }
+.board-shell::-webkit-scrollbar { display:none; width:0; height:0; }
+.board-track { display:flex; width:calc(900px - var(--board-crop) + var(--board-gutter,0px)); }
+.board-track::after { content:""; flex:0 0 var(--board-gutter,0px); }
+.board-crop { flex:0 0 calc(900px - var(--board-crop)); width:calc(900px - var(--board-crop)); height:250px; overflow:hidden; }
+#fretboard { display:block; margin-left:calc(0px - var(--board-crop)); width:900px; height:300px; background:#372018; }
+.board-shell,.board-shell * { touch-action:none; -webkit-touch-callout:none!important; -webkit-user-select:none!important; user-select:none!important; -webkit-user-drag:none; }
+.root-marker { fill:#ff4d4d33; stroke:#ff6262; stroke-width:2.5; pointer-events:none; }
+.note { fill:#f6e7d0; font-size:12px; font-weight:750; text-anchor:middle; pointer-events:none; }
+.string-name { fill:#f6e7d0; font-size:16px; font-weight:800; text-anchor:end; pointer-events:none; }
+.fret-number { fill:#d0b7a1; font-size:14px; text-anchor:middle; pointer-events:none; }
+.hint { margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:12px; color:#b7ac9c; }
+#deck-counter { color:#efd29a; font-size:20px; line-height:1.5; font-weight:750; border:1px solid var(--accent-border); border-radius:10px; padding:6px 12px; background:#28221c; }
+.board-navigation { padding:4px 0 0; }
+.scroll-pad { min-height:48px; padding:8px 12px; gap:10px; display:flex; align-items:center; justify-content:center; border:1px solid #494038; border-radius:10px; background:#24201b; color:#b7ac9c; font-size:12px; cursor:grab; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+.scroll-pad:active { cursor:grabbing; background:#342c23; }
+.scroll-arrow { font-size:24px; line-height:1; color:var(--orange); flex-shrink:0; }
+.scroll-pad:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+@media(min-width:700px) { #first-note-group { flex:1; } .action-row { max-width:520px; } }
+@media(max-width:360px) { .action-row button { font-size:13px; padding:9px 4px; } }
     .cell { cursor: pointer; -webkit-touch-callout: none !important; }
     .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
@@ -414,36 +75,7 @@
     .cell.correct rect { fill: #87e39a85 !important; stroke: #87e39a; stroke-width: 1.5px; }
     .cell.wrong rect { fill: #f27e7285 !important; stroke: #f27e72; stroke-width: 1.5px; }
     
-    /* ルート音マーカー */
-    .root-marker {
-      fill: #ff4d4d33;
-      stroke: #ff4d4d;
-      stroke-width: 2.5;
-      pointer-events: none;
-      stroke-opacity: 0.9;
-      fill-opacity: 0.25;
-    }
-
-    .note { fill: #f6e7d0; font-size: 12px; font-weight: 750; text-anchor: middle; pointer-events: none; }
-    .string-name { fill: #f6e7d0; font-size: 16px; font-weight: 800; text-anchor: end; }
-    .fret-number { fill: #d0b7a1; font-size: 14px; text-anchor: middle; }
-    .hint { margin-top: 6px; font-size: .82rem; display: flex; gap: 12px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
-    .hint-left { display: flex; gap: 12px; align-items: center; }
-    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff4d4d; background: #ff4d4d33; }
-    
-    /* 進捗 / カウンター表示用スタイル */
-    #deck-counter {
-      font-weight: 800;
-      color: #ffca75;
-      background: rgba(255, 202, 117, 0.12);
-      border: 1px solid rgba(255, 202, 117, 0.3);
-      padding: 3px 10px;
-      border-radius: 5px;
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-    }
-  </style>
+</style>
 </head>
 <body>
   <div class="app-viewport-wrapper">
@@ -516,55 +148,29 @@
           </div>
 
           <div class="status-container">
-            <div id="level-indicator"></div>
-            
-            <div id="status-box" aria-live="polite">
-              <div class="status-title-card">
-                <div class="status-label" id="target-label">CHORD / SCALE</div>
-                <div id="target-title">---</div>
-              </div>
-
-              <div class="status-message-card">
-                <span id="status-message">「ゲームを始める」を押してください</span>
-                <button id="play-chord-arpeggio" class="small-btn" type="button" style="display: none;">🎸 コードを鳴らす</button>
-              </div>
+            <div class="chord-row">
+              <div><div class="status-label" id="target-label">コード名</div><div id="target-title">---</div></div>
+              <button id="play-chord-arpeggio" class="small-btn" type="button" disabled>♫ コードを鳴らす</button>
             </div>
+            <div id="status-box" aria-live="polite"><span id="status-message"></span></div>
           </div>
         </div>
       </div>
       
-      <div class="board-shell">
+      <div class="board-shell"><div class="board-track"><div class="board-crop">
         <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
+      </div></div></div>
+      <div class="board-navigation">
+        <div id="scroll-pad" class="scroll-pad" tabindex="0" role="group" aria-label="指板の横スクロール"><span class="scroll-arrow" aria-hidden="true">↔</span><span id="scroll-description">ここを左右にスワイプ・ドラッグして指板を移動</span></div>
       </div>
+      <div id="level-indicator"></div>
       <div class="hint">
         <div id="deck-counter">正解数: 0/0</div>
-        <div class="hint-left">
-          <span class="legend-item"><span class="legend-dot"></span> <span id="legend-root-text">ルート音（根音）/ キー音</span></span>
-        </div>
       </div>
     </main>
   </div>
 
   <script>
-    // iOS Safariでのコンテキストメニュー・長押しルーペ表示防止
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    }, { passive: false });
-
-    // iOS Safariでのダブルタップによる拡大（ズーム）を無効化し、ピンチ操作のみ許可
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function(event) {
-      const now = (new Date()).getTime();
-      if (now - lastTouchEnd <= 300) {
-        event.preventDefault();
-      }
-      lastTouchEnd = now;
-    }, { passive: false });
-
-    document.addEventListener('gesturestart', function(e) {
-      // ピンチジェスチャーは許可
-    });
-
     const svg = document.querySelector('#fretboard');
     const statusBox = document.querySelector('#status-box');
     const statusMessage = document.querySelector('#status-message');
@@ -620,8 +226,8 @@
         initialMsg: "「ゲームを始める」を押してください",
         chordTitleLabel: "コード名",
         scaleTitleLabel: "スケール名",
-        levelTension: (w) => `🔥 テンションコード解放中！ (連続不正解: ${w}/2 で難易度ダウン)`,
-        levelBasic: (c) => `🎵 基本コードモード (連続正解: ${c}/5 でテンション解放)`,
+        levelTension: (w) => `🔥 テンションコード解放中！\n(連続不正解: ${w}/2 で難易度ダウン)`,
+        levelBasic: (c) => `🎵 基本コードモード\n(連続正解: ${c}/5 でテンション解放)`,
         progressScale: (idx, total) => `進捗: ${idx}/${total}`,
         progressChord: (corr, total) => `正解数: ${corr}/${total}`,
         chordPlaying: "和音を再生中…",
@@ -665,8 +271,8 @@
         initialMsg: "Click 'Start Game' to begin",
         chordTitleLabel: "CHORD",
         scaleTitleLabel: "SCALE",
-        levelTension: (w) => `🔥 Tension Chords Unlocked! (Consecutive Wrong: ${w}/2 to downgrade)`,
-        levelBasic: (c) => `🎵 Basic Chord Mode (Consecutive Correct: ${c}/5 to unlock tension)`,
+        levelTension: (w) => `🔥 Tension Chords Unlocked!\n(Consecutive Wrong: ${w}/2 to downgrade)`,
+        levelBasic: (c) => `🎵 Basic Chord Mode\n(Consecutive Correct: ${c}/5 to unlock tension)`,
         progressScale: (idx, total) => `Progress: ${idx}/${total}`,
         progressChord: (corr, total) => `Correct: ${corr}/${total}`,
         chordPlaying: "Playing chord...",
@@ -703,6 +309,9 @@
     }
 
     function updateStaticTexts() {
+      document.querySelector('#scroll-description').textContent = appSettings.lang === 'on' ? 'Swipe or drag here to move the fretboard' : 'ここを左右にスワイプ・ドラッグして指板を移動';
+      document.querySelector('#scroll-pad').setAttribute('aria-label', appSettings.lang === 'on' ? 'Scroll fretboard horizontally' : '指板の横スクロール');
+      document.documentElement.lang = appSettings.lang === 'on' ? 'en' : 'ja';
       document.querySelector('#modal-title-settings').textContent = t('settings');
       document.querySelector('#label-lang-setting').textContent = t('langLabel');
       document.querySelector('#lang-off-btn').textContent = appSettings.lang === 'on' ? 'OFF (Japanese)' : 'OFF (日本語)';
@@ -735,7 +344,6 @@
         replayButton.textContent = t('replayBtn');
       }
       playChordBtn.textContent = t('playChordBtn');
-      document.querySelector('#legend-root-text').textContent = t('legendRoot');
 
       if (game.phase === 'idle') {
         setStatus(null, t('initialMsg'));
@@ -967,6 +575,7 @@
       clearBoardMarks();
       chordQuestionCount = 0;
       chordCorrectCount = 0;
+      replayButton.disabled = true;
       game.phase = 'idle';
       game.target = [];
       game.answers = [];
@@ -977,7 +586,7 @@
 
     function setStatus(titleText, msgText, state = 'normal') {
       if (titleText !== null) targetTitle.textContent = titleText;
-      if (msgText !== null) statusMessage.textContent = msgText;
+      statusMessage.textContent = state === 'correct' ? t('correctMsg') : state === 'wrong' ? t('wrongMsg') : '';
       
       statusBox.classList.remove('status-correct', 'status-wrong');
       if (state === 'correct') statusBox.classList.add('status-correct');
@@ -993,84 +602,112 @@
     function fretX(fret) { return x0 + boardWidth * (1 - Math.pow(0.965, fret) ) / (1 - Math.pow(0.965, frets)); }
     function noteName(midi) { return pitchNames[midi % 12]; }
     
-    function play(midi, sustain = 0.56, volume = 0.35) {
-      audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
-      const now = audioContext.currentTime;
-      const freq = 440 * Math.pow(2, (midi - 69) / 12);
-      const subFreq = freq / 2;
+    let judgmentTimer;
+    let trainingWave;
+    const activeVoices = new Set();
+    function ensureAudio() {
+      audioContext ??= new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
 
-      const osc1 = audioContext.createOscillator();
-      const osc2 = audioContext.createOscillator();
-      const oscSub = audioContext.createOscillator();
-      
-      const gain1 = audioContext.createGain();
-      const gain2 = audioContext.createGain();
-      const gainSub = audioContext.createGain();
-      const masterGain = audioContext.createGain();
+      trainingWave ??= audioContext.createPeriodicWave(new Float32Array(5), new Float32Array([0, 1, .12, .055, .018]));
+      return audioContext;
+    }
+    async function unlockAudio() {
+      const ctx = ensureAudio();
+      if (ctx.state !== 'running') await ctx.resume();
+      if (ctx.state !== 'running') throw new Error('Audio context could not start.');
+    }
 
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(freq, now);
+    function recoverPlayback(error) {
+      console.error('Playback failed:', error);
+      clearTimeout(judgmentTimer);
+      endGesture();
+      activeVoices.forEach(stop => stop());
+      clearBoardMarks();
+      game.phase = 'idle';
+      game.answers = [];
+      startButton.disabled = false;
+      replayButton.disabled = true;
+      replayButton.textContent = t('replayBtn');
+      questionTypeSelect.disabled = noteCountSelect.disabled = firstNoteModeSelect.disabled = false;
+      statusBox.classList.remove('status-correct', 'status-wrong');
+      statusMessage.textContent = appSettings.lang === 'on'
+        ? 'Audio could not play. Please press Start Game again.'
+        : '音声を再生できませんでした。「ゲームを始める」を押して再試行してください。';
+    }
 
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(freq * 2, now);
-
-      oscSub.type = 'sine';
-      oscSub.frequency.setValueAtTime(subFreq, now);
-
-      // --- クリックノイズ対策：アタック時間を0.015秒〜0.02秒に滑らかに拡張 ---
-      gain1.gain.setValueAtTime(0.0001, now);
-      gain1.gain.linearRampToValueAtTime(volume, now + 0.018);
-      gain1.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.09);
-
-      gain2.gain.setValueAtTime(0.0001, now);
-      gain2.gain.linearRampToValueAtTime(volume * 0.45, now + 0.015);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-
-      const subVolume = volume * 0.38;
-      gainSub.gain.setValueAtTime(0.0001, now);
-      gainSub.gain.linearRampToValueAtTime(subVolume, now + 0.02);
-      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.6, now + 0.11);
-
-      osc1.connect(gain1);
-      osc2.connect(gain2);
-      oscSub.connect(gainSub);
-
-      gain1.connect(masterGain);
-      gain2.connect(masterGain);
-      gainSub.connect(masterGain);
-      masterGain.connect(audioContext.destination);
-
-      osc1.start(now);
-      osc2.start(now);
-      oscSub.start(now);
-
-      if (sustain === null) {
-        return () => {
-          const releaseAt = audioContext.currentTime;
-          masterGain.gain.cancelScheduledValues(releaseAt);
-          masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), releaseAt);
-          masterGain.gain.exponentialRampToValueAtTime(0.0001, releaseAt + 0.12);
-          osc1.stop(releaseAt + 0.14);
-          osc2.stop(releaseAt + 0.14);
-          oscSub.stop(releaseAt + 0.14);
-        };
+    async function runPlayback(action) {
+      try {
+        await action();
+      } catch (error) {
+        recoverPlayback(error);
       }
+    }
 
-      // --- 終了時（リリース時）のフェードアウトを追加し、プツッという音を防止 ---
-      gain1.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-      gainSub.gain.exponentialRampToValueAtTime(0.0001, now + sustain);
-
-      osc1.stop(now + sustain + 0.04);
-      osc2.stop(now + sustain + 0.04);
-      oscSub.stop(now + sustain + 0.04);
-      
-      return () => {};
+    // A sustained, warm body plus a short bell-like attack; no reverb or audio loop.
+    function play(midi, sustain = .56, volume = .35, scheduledTime) {
+      if (document.hidden) return () => {};
+      const ctx = ensureAudio();
+      const now = scheduledTime ?? ctx.currentTime;
+      const frequency = 440 * 2 ** ((midi - 69) / 12);
+      const duration = sustain === null ? null : Math.max(.08, sustain);
+      const level = volume * .46;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const tine = ctx.createOscillator();
+      const tineGain = ctx.createGain();
+      osc.setPeriodicWave(trainingWave);
+      osc.frequency.setValueAtTime(frequency, now);
+      tine.type = 'sine';
+      tine.frequency.setValueAtTime(frequency * 4, now);
+      const decayTime = duration === null ? .18 : Math.min(.18, duration * .5);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(level, now + .005);
+      gain.gain.linearRampToValueAtTime(level * .78, now + decayTime);
+      const tineDuration = duration === null ? .24 : Math.min(.24, duration);
+      tineGain.gain.setValueAtTime(0, now);
+      tineGain.gain.linearRampToValueAtTime(level * .24, now + .003);
+      tineGain.gain.exponentialRampToValueAtTime(.0001, now + tineDuration);
+      osc.connect(gain).connect(ctx.destination);
+      tine.connect(tineGain).connect(ctx.destination);
+      let stopped = false;
+      let tineEnded = false;
+      const stop = () => {
+        if (stopped) return;
+        stopped = true;
+        const at = ctx.currentTime;
+        gain.gain.cancelScheduledValues(at);
+        gain.gain.setTargetAtTime(0, at, .018);
+        osc.stop(at + .1);
+        if (!tineEnded) {
+          tineGain.gain.cancelScheduledValues(at);
+          tineGain.gain.setTargetAtTime(0, at, .01);
+          tine.stop(at + .06);
+        }
+      };
+      activeVoices.add(stop);
+      osc.onended = () => {
+        stopped = true;
+        activeVoices.delete(stop);
+        osc.disconnect();
+        gain.disconnect();
+      };
+      tine.onended = () => { tineEnded = true; tine.disconnect(); tineGain.disconnect(); };
+      // Always schedule start before stop (required by Web Audio).
+      osc.start(now);
+      tine.start(now);
+      tine.stop(now + tineDuration + .01);
+      if (duration !== null) {
+        const end = now + duration;
+        gain.gain.setValueAtTime(level * .78, Math.max(now + decayTime, end - .06));
+        gain.gain.linearRampToValueAtTime(0, end);
+        osc.stop(end + .02);
+      }
+      return stop;
     }
 
     function playJudgmentSound(isCorrect) {
       if (appSettings.sound !== 'exists') return;
-      audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+      audioContext ??= new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
       const now = audioContext.currentTime;
 
       if (isCorrect) {
@@ -1088,6 +725,7 @@
 
           osc.connect(gain);
           gain.connect(audioContext.destination);
+          osc.onended = () => { osc.disconnect(); gain.disconnect(); };
           osc.start(startTime);
           osc.stop(startTime + note.dur + 0.03);
         });
@@ -1104,67 +742,15 @@
 
           osc.connect(gain);
           gain.connect(audioContext.destination);
+          osc.onended = () => { osc.disconnect(); gain.disconnect(); };
           osc.start(now);
           osc.stop(now + 0.38);
         });
       }
     }
 
-    function playClassicalGuitarNote(midi, startTime, duration = 2.0, volume = 0.28) {
-      audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
-      const freq = 440 * Math.pow(2, (midi - 69) / 12);
-      const subFreq = freq / 2;
-
-      const osc1 = audioContext.createOscillator();
-      const osc2 = audioContext.createOscillator();
-      const oscSub = audioContext.createOscillator();
-      
-      const gain1 = audioContext.createGain();
-      const gain2 = audioContext.createGain();
-      const gainSub = audioContext.createGain();
-      const masterGain = audioContext.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(freq, startTime);
-
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(freq * 2, startTime);
-
-      oscSub.type = 'sine';
-      oscSub.frequency.setValueAtTime(subFreq, startTime);
-
-      // --- アルペジオ・ギターノートのアタック時間を滑らかに拡張 ---
-      gain1.gain.setValueAtTime(0.0001, startTime);
-      gain1.gain.linearRampToValueAtTime(volume, startTime + 0.018);
-      gain1.gain.exponentialRampToValueAtTime(volume * 0.4, startTime + 0.12);
-      gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-      gain2.gain.setValueAtTime(0.0001, startTime);
-      gain2.gain.linearRampToValueAtTime(volume * 0.35, startTime + 0.015);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.09);
-
-      const subVolume = volume * 0.35;
-      gainSub.gain.setValueAtTime(0.0001, startTime);
-      gainSub.gain.linearRampToValueAtTime(subVolume, startTime + 0.02);
-      gainSub.gain.exponentialRampToValueAtTime(subVolume * 0.5, startTime + 0.14);
-      gainSub.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-      osc1.connect(gain1);
-      osc2.connect(gain2);
-      oscSub.connect(gainSub);
-
-      gain1.connect(masterGain);
-      gain2.connect(masterGain);
-      gainSub.connect(masterGain);
-      masterGain.connect(audioContext.destination);
-
-      osc1.start(startTime);
-      osc2.start(startTime);
-      oscSub.start(startTime);
-
-      osc1.stop(startTime + duration + 0.04);
-      osc2.stop(startTime + duration + 0.04);
-      oscSub.stop(startTime + duration + 0.04);
+    function playClassicalGuitarNote(midi, startTime, duration = 2, volume = .28) {
+      return play(midi, duration, volume, startTime);
     }
 
     function playChord(midiNotes) {
@@ -1172,22 +758,25 @@
       const sortedMidis = [...midiNotes].sort((a, b) => a - b);
       const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
       
+      const startTime = ensureAudio().currentTime;
       sortedMidis.forEach((midi, idx) => {
         const isRoot = (midi % 12 === game.rootPitchIndex);
-        if (isRoot) {
-          play(midi, 2.5 * speedFactor, 0.4);
-        } else {
-          setTimeout(() => {
-            play(midi, 1.4 * speedFactor, 0.25);
-          }, idx * (45 * speedFactor));
-        }
+        play(
+          midi,
+          (isRoot ? 1.2 : .9) * speedFactor,
+          isRoot ? .4 : .25,
+          startTime + (isRoot ? 0 : idx * .045 * speedFactor)
+        );
       });
     }
 
     async function playChordArpeggio() {
+      if (game.phase === 'playing') return;
       if (!game.chordMidiNotes || game.chordMidiNotes.length === 0) return;
       playChordBtn.disabled = true;
-      audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+      startButton.disabled = replayButton.disabled = true;
+      questionTypeSelect.disabled = noteCountSelect.disabled = firstNoteModeSelect.disabled = true;
+      await unlockAudio();
 
       const sortedMidis = [...game.chordMidiNotes].sort((a, b) => a - b);
       const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
@@ -1201,13 +790,15 @@
         playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.28);
       });
 
-      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + (1200 * speedFactor);
+      const totalWaitMs = (sortedMidis.length - 1) * intervalMs + (sustainTime * 1000);
       await wait(totalWaitMs);
 
       playChordBtn.disabled = false;
+      startButton.disabled = replayButton.disabled = false;
+      questionTypeSelect.disabled = noteCountSelect.disabled = firstNoteModeSelect.disabled = false;
     }
 
-    playChordBtn.addEventListener('click', playChordArpeggio);
+    playChordBtn.addEventListener('click', () => runPlayback(playChordArpeggio));
 
     let lastPlayingCell = null;
     let playingTimeoutId = null;
@@ -1249,7 +840,7 @@
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
     
     function clearBoardMarks() {
-      playChordBtn.style.display = 'none';
+      playChordBtn.disabled = true;
       positions.forEach(position => position.cell.classList.remove('selected', 'correct', 'wrong', 'playing', 'playing-correct', 'playing-wrong', 'computer-first'));
       if (rootMarkerGroup) {
         rootMarkerGroup.innerHTML = '';
@@ -1327,7 +918,11 @@
 
         if (candidates.length < count - 1) continue;
 
-        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+        const shuffled = [...candidates];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
         let validSeq = null;
 
         const maxRangeMidi = chordDef.isTension ? 24 : 12;
@@ -1472,7 +1067,12 @@
 
     async function playQuestion() {
       if (!game.target.length) return;
-      playChordBtn.style.display = 'none';
+      playChordBtn.disabled = true;
+      startButton.disabled = replayButton.disabled = true;
+      questionTypeSelect.disabled = noteCountSelect.disabled = firstNoteModeSelect.disabled = true;
+      await unlockAudio();
+      activeVoices.forEach(stop => stop());
+      centerPosition(game.target[0]);
       const previousPhase = game.phase;
       game.phase = 'playing';
       startButton.disabled = true;
@@ -1503,7 +1103,7 @@
         const rootPitchName = pitchNames[game.rootPitchIndex];
         setStatus(null, t('scalePlaying', rootPitchName));
         const firstNoteMidi = game.target[0].midi;
-        play(firstNoteMidi, getAdjustedTime(1.8), 0.4);
+        play(firstNoteMidi, getAdjustedTime(1.05), 0.4);
         await wait(getAdjustedTime(1200));
       }
 
@@ -1536,7 +1136,7 @@
           activePos.string, 
           activePos.fret, 
           false, 
-          1.15, 
+          .56, 
           shouldShowVisual, 
           isShowingResult && isNoteCorrect, 
           isShowingResult && !isNoteCorrect
@@ -1562,6 +1162,7 @@
           : t('guessFirstPrompt', total);
         setStatus(null, msg);
       }
+      playChordBtn.disabled = game.mode !== 'chord';
       startButton.disabled = false;
       replayButton.disabled = false;
       questionTypeSelect.disabled = false;
@@ -1573,8 +1174,9 @@
       const correct = game.answers.every((ans, idx) => ans.midi === game.target[idx].midi);
 
       if (isNewAnswer) {
-        setTimeout(() => {
-          playJudgmentSound(correct);
+        clearTimeout(judgmentTimer);
+        judgmentTimer = setTimeout(() => {
+          if (!document.hidden) playJudgmentSound(correct);
         }, 500);
       }
 
@@ -1639,10 +1241,10 @@
       }
 
       if (game.mode === 'chord') {
-        playChordBtn.style.display = 'inline-block';
+        playChordBtn.disabled = false;
         updateLevelIndicator();
       } else {
-        playChordBtn.style.display = 'none';
+        playChordBtn.disabled = true;
       }
       
       game.phase = 'result';
@@ -1704,6 +1306,10 @@
     }
 
     async function startGame() {
+      clearTimeout(judgmentTimer);
+      endGesture();
+      ensureAudio();
+      activeVoices.forEach(stop => stop());
       clearBoardMarks();
       replayButton.textContent = t('replayBtn');
       const mode = questionTypeSelect.value;
@@ -1731,12 +1337,13 @@
       };
 
       targetTitle.textContent = mode === 'chord' ? q.titleName : q.displayKey;
+      centerPosition(game.target[0]);
       await playQuestion();
     }
 
-    startButton.addEventListener('click', startGame);
+    startButton.addEventListener('click', () => runPlayback(startGame));
 
-    replayButton.addEventListener('click', async () => {
+    replayButton.addEventListener('click', () => runPlayback(async () => {
       if (game.phase === 'guess') {
         game.answers = [];
         positions.forEach(p => p.cell.classList.remove('selected'));
@@ -1744,7 +1351,7 @@
       } else if (game.phase === 'result') {
         await playQuestion();
       }
-    });
+    }));
 
     svg.append(node('rect', { x: x0, y: y0, width: boardWidth, height: boardHeight, fill: '#4c2d20' }));
     for (let fret = 0; fret <= frets; fret++) {
@@ -1786,40 +1393,111 @@
         };
         positions.push(position);
         
-        cell.addEventListener('pointerdown', event => {
-          if (game.phase === 'playing') return;
+        cell.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
-          
-          try {
-            cell.setPointerCapture(event.pointerId);
-          } catch (e) {}
-
-          choose(position, false);
-          startHeldNote(position);
+          if (event.repeat || game.phase === 'playing') return;
+          pressPosition(position);
         });
-
-        const handlePointerUp = event => {
-          try {
-            if (cell.hasPointerCapture && cell.hasPointerCapture(event.pointerId)) {
-              cell.releasePointerCapture(event.pointerId);
-            }
-          } catch (e) {}
-          stopHeldNote(position);
-        };
-
-        cell.addEventListener('pointerup', handlePointerUp);
-        cell.addEventListener('pointerleave', handlePointerUp);
-        cell.addEventListener('pointercancel', handlePointerUp);
-        
-        cell.addEventListener('keydown', event => { 
-          if (event.key === 'Enter' || event.key === ' ') { 
-            event.preventDefault(); 
-            choose(position); 
-          } 
+        cell.addEventListener('keyup', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            stopHeldNote(position);
+          }
         });
+        cell.addEventListener('blur', () => stopHeldNote(position));
         svg.append(cell);
       }
     });
+
+    const boardShell = document.querySelector('.board-shell');
+    const scrollPad = document.querySelector('#scroll-pad');
+    let gesture = null;
+    let scrollGesture = null;
+
+    function setBoardScroll(left) {
+      const max = Math.max(0, boardShell.scrollWidth - boardShell.clientWidth);
+      boardShell.scrollLeft = Math.max(0, Math.min(max, left));
+    }
+    function centerPosition(position) {
+      if (!position) return;
+      const gutter = boardShell.clientWidth / 2;
+      boardShell.style.setProperty('--board-gutter', `${gutter}px`);
+      // The left SVG margin is physically clipped, so scroll position zero starts at G/D/A/E.
+      setBoardScroll(position.fret <= 2 ? 0 : (position.cx - 44) * 900 / 1020 - gutter);
+    }
+    function pressPosition(position) {
+      if (game.phase === 'playing') return;
+      try {
+        const ctx = ensureAudio();
+        if (ctx.state !== 'running') ctx.resume().catch(recoverPlayback);
+        // No long-press timer or release wait: schedule sound in this input event.
+        startHeldNote(position);
+        choose(position);
+      } catch (error) {
+        recoverPlayback(error);
+      }
+    }
+    function endGesture() {
+      if (!gesture) return;
+      const current = gesture;
+      gesture = null;
+      stopHeldNote(current.position);
+    }
+    ['touchstart', 'touchmove', 'contextmenu', 'selectstart', 'dragstart'].forEach(type => {
+      [boardShell, scrollPad].forEach(surface => {
+        surface.addEventListener(type, event => { if (event.cancelable) event.preventDefault(); }, { passive:false });
+      });
+    });
+    boardShell.addEventListener('pointerdown', event => {
+      if (!event.isPrimary || event.button !== 0) return;
+      event.preventDefault();
+      endGesture();
+      if (game.phase === 'playing') return;
+      const position = positions.find(p => p.cell === event.target.closest('.cell'));
+      if (!position) return;
+      gesture = { id:event.pointerId, position };
+      boardShell.setPointerCapture(event.pointerId);
+      pressPosition(position);
+    });
+    boardShell.addEventListener('pointerup', event => { if (gesture?.id === event.pointerId) endGesture(); });
+    boardShell.addEventListener('pointercancel', () => endGesture());
+    boardShell.addEventListener('lostpointercapture', () => endGesture());
+
+    scrollPad.addEventListener('pointerdown', event => {
+      if (!event.isPrimary || event.button !== 0) return;
+      event.preventDefault();
+      scrollPad.setPointerCapture(event.pointerId);
+      scrollGesture = { id:event.pointerId, x:event.clientX, left:boardShell.scrollLeft };
+    });
+    scrollPad.addEventListener('pointermove', event => {
+      if (!scrollGesture || scrollGesture.id !== event.pointerId) return;
+      setBoardScroll(scrollGesture.left - (event.clientX - scrollGesture.x));
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => {
+      scrollPad.addEventListener(type, () => { scrollGesture = null; });
+    });
+    scrollPad.addEventListener('keydown', event => {
+      const offsets = { ArrowLeft:-60, ArrowRight:60, Home:-Infinity, End:Infinity };
+      if (!(event.key in offsets)) return;
+      event.preventDefault();
+      setBoardScroll(boardShell.scrollLeft + offsets[event.key]);
+    });
+    window.addEventListener('blur', () => {
+      endGesture(); scrollGesture = null;
+      stopHeldNote(currentHeldPosition);
+      activeVoices.forEach(stop => stop());
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        endGesture(); scrollGesture = null;
+        stopHeldNote(currentHeldPosition);
+        activeVoices.forEach(stop => stop());
+      }
+    });
+    window.addEventListener('resize', () => centerPosition(game.target[0] || positions[1]));
+    centerPosition(positions[1]);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') settingsPopup.classList.remove('active'); });
 
     updateUIControls();
     updateSettingsUI();
