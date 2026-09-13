@@ -22,21 +22,24 @@ button:disabled,select:disabled { opacity:.45; cursor:default; }
 button:focus-visible,select:focus-visible,.cell:focus-visible { outline:3px solid #9ddcff; outline-offset:2px; }
 select { border-width:2px; background:#28231e; color:var(--orange); border-color:var(--accent-border); width:100%; min-width:0; }
 .status-container { width:100%; display:flex; flex-direction:column; gap:6px; }
-.chord-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#28221c; border:2px solid #594735; padding:10px 12px; border-radius:14px; min-height:65px; }
+.chord-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#28221c; border:2px solid #594735; padding:5px 12px; border-radius:14px; min-height:56px; }
 .status-label { font-size:10px; letter-spacing:.12em; color:#b7a590; }
 #target-title { font-size:21px; font-weight:800; color:var(--orange); overflow-wrap:anywhere; }
 .small-btn { font-size:13px; flex-shrink:0; }
 #play-chord-arpeggio { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#17110a; }
 #level-indicator { font-size:15px; white-space:pre-line; margin-top:10px; color:#b7ac9c; line-height:1.5; }
-#status-box { min-height:65px; margin:0; padding:12px; border:2px solid #494038; border-radius:14px; background:#24201b; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:800; }
+#status-box { min-height:52px; margin:0; padding:8px 12px; border:2px solid #494038; border-radius:14px; background:#24201b; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:800; }
 #status-box.status-correct { color:#99e6ad; border-color:#99e6ad; background:#213428; }
 #status-box.status-wrong { color:#ff9b91; border-color:#ff9b91; background:#382521; }
 .settings-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; position:relative; }
 .control-group { display:flex; align-items:center; gap:6px; font-size:12px; min-width:0; }
 .control-group label { flex-shrink:0; }
 #first-note-group { flex:1 1 100%; }
-#note-count-group { flex:1; }
-.settings-btn { font-size:13px; border-width:2px; }
+#note-count-group { flex:0 0 auto; gap:4px; }
+#question-type-group { gap:4px; }
+#question-type { width:94px; }
+#note-count { width:62px; }
+.settings-btn { font-size:13px; padding-inline:8px; border-width:2px; }
 .settings-popup { display:none; position:absolute; top:52px; left:0; z-index:30; width:min(340px,100%); max-height:55dvh; overflow:auto; padding:16px; background:#25201b; border:1px solid var(--accent-border); border-radius:16px; box-shadow:0 12px 40px #0009; }
 .settings-popup.active { display:flex; flex-direction:column; gap:16px; }
 .settings-popup h3 { margin:0; font-size:16px; }
@@ -48,13 +51,12 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .board-shell::-webkit-scrollbar { display:none; width:0; height:0; }
 .board-track { display:flex; width:calc(900px - var(--board-crop) + var(--board-gutter,0px)); }
 .board-track::after { content:""; flex:0 0 var(--board-gutter,0px); }
-.board-crop { flex:0 0 calc(900px - var(--board-crop)); width:calc(900px - var(--board-crop)); height:250px; overflow:hidden; }
-#fretboard { display:block; margin-left:calc(0px - var(--board-crop)); width:900px; height:300px; background:#372018; }
+.board-crop { flex:0 0 calc(900px - var(--board-crop)); width:calc(900px - var(--board-crop)); height:206px; overflow:hidden; }
+#fretboard { display:block; margin-top:-44px; margin-left:calc(0px - var(--board-crop)); width:900px; height:300px; background:#372018; }
 .board-shell,.board-shell * { touch-action:none; -webkit-touch-callout:none!important; -webkit-user-select:none!important; user-select:none!important; -webkit-user-drag:none; }
 .root-marker { fill:#ff4d4d33; stroke:#ff6262; stroke-width:2.5; pointer-events:none; }
 .note { fill:#f6e7d0; font-size:12px; font-weight:750; text-anchor:middle; pointer-events:none; }
 .string-name { fill:#f6e7d0; font-size:16px; font-weight:800; text-anchor:end; pointer-events:none; }
-.fret-number { fill:#d0b7a1; font-size:14px; text-anchor:middle; pointer-events:none; }
 .hint { margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:12px; color:#b7ac9c; }
 #deck-counter { color:#efd29a; font-size:20px; line-height:1.5; font-weight:750; border:1px solid var(--accent-border); border-radius:10px; padding:6px 12px; background:#28221c; }
 .board-navigation { padding:4px 0 0; }
@@ -63,7 +65,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .scroll-arrow { font-size:24px; line-height:1; color:var(--orange); flex-shrink:0; }
 .scroll-pad:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
 @media(min-width:700px) { #first-note-group { flex:1; } .action-row { max-width:520px; } }
-@media(max-width:360px) { .action-row button { font-size:13px; padding:9px 4px; } }
+@media(max-width:360px) { .settings-row { gap:4px; } .action-row button { font-size:13px; padding:9px 4px; } }
     .cell { cursor: pointer; -webkit-touch-callout: none !important; }
     .cell rect { fill: transparent; }
     .cell:focus { outline: none; }
@@ -115,11 +117,11 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
             </div>
           </div>
 
-          <div class="control-group">
-            <label for="question-type" id="label-q-type">問題種別:</label>
+          <div class="control-group" id="question-type-group">
+            <label for="question-type" id="label-q-type">問題:</label>
             <select id="question-type">
               <option value="chord" selected>コード</option>
-              <option value="scale">スケール（ジャズ）</option>
+              <option value="scale">スケール</option>
             </select>
           </div>
 
@@ -149,7 +151,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
           <div class="status-container">
             <div class="chord-row">
-              <div><div class="status-label" id="target-label">コード名</div><div id="target-title">---</div></div>
+              <div><div class="status-label" id="target-label" hidden>コード名</div><div id="target-title">---</div></div>
               <button id="play-chord-arpeggio" class="small-btn" type="button" disabled>♫ コードを鳴らす</button>
             </div>
             <div id="status-box" aria-live="polite"><span id="status-message"></span></div>
@@ -163,7 +165,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       <div class="board-navigation">
         <div id="scroll-pad" class="scroll-pad" tabindex="0" role="group" aria-label="指板の横スクロール"><span class="scroll-arrow" aria-hidden="true">↔</span><span id="scroll-description">ここを左右にスワイプ・ドラッグして指板を移動</span></div>
       </div>
-      <div id="level-indicator"></div>
+      <div id="level-indicator" hidden></div>
       <div class="hint">
         <div id="deck-counter">正解数: 0/0</div>
       </div>
@@ -208,9 +210,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         soundLabel: "正誤判定のサウンド",
         soundExists: "あり（標準）",
         soundNone: "なし",
-        qType: "問題種別:",
+        qType: "問題:",
         optChord: "コード",
-        optScale: "スケール（ジャズ）",
+        optScale: "スケール",
         noteCount: "音数:",
         opt2: "2音",
         opt3: "3音",
@@ -255,7 +257,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         soundNone: "None",
         qType: "Mode:",
         optChord: "Chord",
-        optScale: "Scale (Jazz)",
+        optScale: "Scale",
         noteCount: "Notes:",
         opt2: "2 Notes",
         opt3: "3 Notes",
@@ -655,6 +657,10 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       const gain = ctx.createGain();
       const tine = ctx.createOscillator();
       const tineGain = ctx.createGain();
+      // Keep note envelopes intact; a separate gain controls the release of both layers.
+      const releaseGain = ctx.createGain();
+      releaseGain.gain.setValueAtTime(1, ctx.currentTime);
+      releaseGain.connect(ctx.destination);
       osc.setPeriodicWave(trainingWave);
       osc.frequency.setValueAtTime(frequency, now);
       tine.type = 'sine';
@@ -667,31 +673,40 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       tineGain.gain.setValueAtTime(0, now);
       tineGain.gain.linearRampToValueAtTime(level * .24, now + .003);
       tineGain.gain.exponentialRampToValueAtTime(.0001, now + tineDuration);
-      osc.connect(gain).connect(ctx.destination);
-      tine.connect(tineGain).connect(ctx.destination);
+      osc.connect(gain).connect(releaseGain);
+      tine.connect(tineGain).connect(releaseGain);
       let stopped = false;
       let tineEnded = false;
+      let bodyEnded = false;
+      const disconnectRelease = () => {
+        if (bodyEnded && tineEnded) releaseGain.disconnect();
+      };
       const stop = () => {
         if (stopped) return;
         stopped = true;
         const at = ctx.currentTime;
-        gain.gain.cancelScheduledValues(at);
-        gain.gain.setTargetAtTime(0, at, .018);
-        osc.stop(at + .1);
-        if (!tineEnded) {
-          tineGain.gain.cancelScheduledValues(at);
-          tineGain.gain.setTargetAtTime(0, at, .01);
-          tine.stop(at + .06);
-        }
+        // Cancelling an in-progress attack/decay ramp can abruptly change its value.
+        // Fade a previously constant gain instead, reaching exact silence before stop().
+        releaseGain.gain.setValueAtTime(1, at);
+        releaseGain.gain.linearRampToValueAtTime(0, at + .07);
+        osc.stop(at + .085);
+        if (!tineEnded) tine.stop(at + .085);
       };
       activeVoices.add(stop);
       osc.onended = () => {
         stopped = true;
+        bodyEnded = true;
         activeVoices.delete(stop);
         osc.disconnect();
         gain.disconnect();
+        disconnectRelease();
       };
-      tine.onended = () => { tineEnded = true; tine.disconnect(); tineGain.disconnect(); };
+      tine.onended = () => {
+        tineEnded = true;
+        tine.disconnect();
+        tineGain.disconnect();
+        disconnectRelease();
+      };
       // Always schedule start before stop (required by Web Audio).
       osc.start(now);
       tine.start(now);
@@ -1357,9 +1372,6 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     for (let fret = 0; fret <= frets; fret++) {
       const x = fretX(fret);
       svg.append(node('line', { x1: x, y1: y0, x2: x, y2: y0 + boardHeight, stroke: fret === 0 ? '#f2ddba' : '#8f8174', 'stroke-width': fret === 0 ? 10 : 3 }));
-      const number = node('text', { x: fret === 0 ? x + 8 : (fretX(fret - 1) + x) / 2, y: 35, class: 'fret-number' });
-      number.textContent = fret;
-      svg.append(number);
     }
     [3, 5, 7, 9, 15].forEach(fret => svg.append(node('circle', { cx: (fretX(fret - 1) + fretX(fret)) / 2, cy: 166, r: 7, fill: '#e8c792' })));
     [116, 226].forEach(y => svg.append(node('circle', { cx: (fretX(11) + fretX(12)) / 2, cy: y, r: 7, fill: '#e8c792' })));
