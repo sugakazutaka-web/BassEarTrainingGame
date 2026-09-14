@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Electric Bass Fretboard - Training</title>
   <style>
-:root { --orange:#e6bd89; --orange-deep:#df7f2b; --accent-border:#826649; --board-crop:38.8235294117647px; color-scheme:dark; font-family:ui-rounded,"Hiragino Sans",system-ui,sans-serif; background:#181613; color:#f5f2e9; }
+:root { --orange:#e6bd89; --orange-deep:#df7f2b; --accent-border:#826649; --board-crop:38.8235294117647px; color-scheme:dark; font-family:ui-rounded,"Hiragino Sans",system-ui,sans-serif; background:#000; color:#f5f2e9; }
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body { margin:0; -webkit-text-size-adjust:100%; }
+body { background:#000; margin:0; -webkit-text-size-adjust:100%; }
 .app-viewport-wrapper { width:100%; }
 main { width:100%; max-width:940px; margin:auto; padding:0 max(12px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
-.controls { position:sticky; top:0; z-index:20; padding:max(10px,env(safe-area-inset-top)) 0 6px; background:#181613; display:flex; flex-direction:column; gap:10px; }
+.controls { position:sticky; top:0; z-index:20; padding:max(10px,env(safe-area-inset-top)) 0 6px; background:#000; display:flex; flex-direction:column; gap:10px; }
 .top-controls { display:flex; flex-direction:column; gap:8px; }
 .action-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; }
 button,select { font:inherit; font-size:16px; border-radius:12px; min-height:46px; border:1px solid #49483e; padding:9px 10px; touch-action:manipulation; }
 button { background:linear-gradient(180deg,#302820,#29231e); color:var(--orange); border-color:var(--accent-border); font-weight:750; cursor:pointer; }
-button.primary-btn { background:linear-gradient(180deg,#e58b3a,var(--orange-deep)); border-color:#e99c58; color:#241406; box-shadow:0 2px 5px #0003; }
+button.primary-btn { background:linear-gradient(90deg,#f2b45f 0%,#e99942 48%,#d87928 100%); border-color:#e99c58; color:#241406; box-shadow:0 2px 5px #0003; }
 button.secondary { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; }
 button:active { filter:brightness(.85); }
 button:disabled,select:disabled { opacity:.45; cursor:default; }
@@ -41,10 +41,17 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 #question-type { width:auto; flex-shrink:0; }
 #note-count { width:auto; flex-shrink:0; }
 .settings-btn { font-size:13px; padding-inline:8px; border-width:2px; }
-.settings-popup { display:none; position:absolute; top:52px; left:0; z-index:30; width:min(340px,100%); max-height:55dvh; overflow:auto; padding:16px; background:#25201b; border:1px solid var(--accent-border); border-radius:16px; box-shadow:0 12px 40px #0009; }
-.settings-popup.active { display:flex; flex-direction:column; gap:16px; }
+.settings-popup { display:none; position:absolute; top:52px; left:0; z-index:30; width:min(340px,100%); padding:12px; background:#000; border:1px solid var(--accent-border); border-radius:16px; box-shadow:0 12px 40px #0009; }
+.settings-popup.active { display:flex; flex-direction:column; gap:10px; }
 .settings-popup h3 { margin:0; font-size:16px; }
 .setting-item label { display:block; margin-bottom:6px; font-size:13px; }
+.settings-popup .setting-item label { margin-bottom:4px; }
+.settings-popup .setting-opt-btn { min-height:40px; padding:7px 8px; }
+@media(max-height:500px) and (min-width:480px) {
+  .settings-popup { width:min(560px,100%); }
+  .settings-popup.active { display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; }
+  .settings-popup h3 { grid-column:1 / -1; }
+}
 .setting-options { display:flex; gap:6px; }
 .setting-opt-btn { flex:1; font-size:13px; border-width:2px; }
 .setting-opt-btn.active { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; box-shadow:none; }
@@ -812,14 +819,12 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
       
       const startTime = ensureAudio().currentTime;
+      const endTime = startTime + 1.2 * speedFactor;
       sortedMidis.forEach((midi, idx) => {
         const isRoot = (midi % 12 === game.rootPitchIndex);
-        play(
-          midi,
-          (isRoot ? 1.2 : .9) * speedFactor,
-          isRoot ? .4 : .25,
-          startTime + (isRoot ? 0 : idx * .045 * speedFactor)
-        );
+        const noteStartTime = startTime + (isRoot ? 0 : idx * .045 * speedFactor);
+        // Every voice shares the same final 60 ms release and silence time.
+        play(midi, endTime - noteStartTime, isRoot ? .4 : .25, noteStartTime);
       });
     }
 
@@ -835,12 +840,14 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       const speedFactor = appSettings.speed === 'fast' ? 0.5 : 1.0;
 
       const intervalMs = 280 * speedFactor;
-      const sustainTime = 2.0 * speedFactor;
+      const sustainTime = 1.0 * speedFactor;
       const startTime = audioContext.currentTime;
 
+      const endTime = startTime + (sortedMidis.length - 1) * intervalMs / 1000 + sustainTime;
       sortedMidis.forEach((midi, index) => {
         const noteStartTime = startTime + (index * intervalMs / 1000);
-        playClassicalGuitarNote(midi, noteStartTime, sustainTime, 0.28);
+        // Keep the staggered attacks, then release all chord tones together.
+        playClassicalGuitarNote(midi, noteStartTime, endTime - noteStartTime, 0.28);
       });
 
       const totalWaitMs = (sortedMidis.length - 1) * intervalMs + (sustainTime * 1000);
