@@ -1048,6 +1048,14 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       return false;
     }
 
+    function fitChordToFretboard(midiNotes) {
+      if (!midiNotes.length) return [];
+      const highestFretboardMidi = Math.max(...strings.map(string => string.midi + frets));
+      const excess = Math.max(...midiNotes) - highestFretboardMidi;
+      const octaveShift = Math.max(0, Math.ceil(excess / 12)) * 12;
+      return midiNotes.map(midi => midi - octaveShift);
+    }
+
     function makeChordQuestion(count, isRootFirst) {
       let attempts = 0;
       const availableDefs = difficulty().hard 
@@ -1139,7 +1147,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
         if (validSeq && validSeq.length === count) {
           const baseMidi = 60 + rootPitchIndex;
-          const chordMidiNotes = chordDef.intervals.map(i => baseMidi + i);
+          const chordMidiNotes = fitChordToFretboard(chordDef.intervals.map(i => baseMidi + i));
           return { sequence: validSeq, titleName: chordName, displayKey: chordName, rootPitchIndex, chordMidiNotes };
         }
       }
