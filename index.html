@@ -19,8 +19,9 @@ button.primary-btn { background:linear-gradient(90deg,#f2b45f 0%,#e99942 48%,#d8
 button.secondary { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; }
 button:active { filter:brightness(.85); }
 button:disabled,select:disabled { opacity:.45; cursor:default; }
-button:focus-visible,select:focus-visible,.cell:focus-visible { outline:3px solid #9ddcff; outline-offset:2px; }
+button:focus-visible,.cell:focus-visible { outline:3px solid #9ddcff; outline-offset:2px; }
 select { border-width:2px; background:#28231e; color:var(--orange); border-color:var(--accent-border); width:100%; min-width:0; }
+#question-type:focus, #note-count:focus { outline:none; border-color:var(--accent-border); box-shadow:none; }
 .status-container { width:100%; display:flex; flex-direction:column; gap:6px; }
 .chord-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#28221c; border:2px solid #594735; padding:5px 12px; border-radius:14px; min-height:56px; }
 .status-label { font-size:10px; letter-spacing:.12em; color:#b7a590; }
@@ -68,6 +69,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .string-name { fill:#f6e7d0; font-size:16px; font-weight:800; text-anchor:end; pointer-events:none; }
 .hint { margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:12px; color:#b7ac9c; }
 #deck-counter { color:#efd29a; font-size:20px; line-height:1.5; font-weight:750; border:1px solid var(--accent-border); border-radius:10px; padding:6px 12px; background:#28221c; }
+#deck-counter.hard-mode { color:#ffd28b; border-color:#e9933d; background:linear-gradient(110deg,#432315,#2e2118); box-shadow:0 0 12px #ed87252b; }
 .board-navigation { padding:4px 0 0; }
 .scroll-pad { min-height:48px; padding:8px 12px; gap:10px; display:flex; align-items:center; justify-content:center; border:1px solid #494038; border-radius:10px; background:#24201b; color:#c4b9a9; font-size:14px; font-weight:500; cursor:grab; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
 .scroll-pad:active { cursor:grabbing; background:#342c23; }
@@ -178,7 +180,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       </div>
       <div id="level-indicator" hidden></div>
       <div class="hint">
-        <div id="deck-counter">正解数: 0/0</div>
+        <div id="deck-counter">連続正解数：0/5　 EASY MODE</div>
       </div>
     </main>
   </div>
@@ -236,6 +238,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         optRoot: "ルート音",
         optRandom: "ルート音以外",
         startBtn: "▶ ゲームを始める",
+        skipBtn: "⏭ スキップ",
         replayBtn: "🔊 もう一度聴く",
         viewResultBtn: "👁️ 正解を確認する",
         playChordBtn: "🎸 コードを鳴らす",
@@ -285,6 +288,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         optRoot: "Root Note",
         optRandom: "Non-root Note",
         startBtn: "▶ Start Game",
+        skipBtn: "⏭ Skip",
         replayBtn: "🔊 Listen Again",
         viewResultBtn: "👁️ Show Answer",
         playChordBtn: "🎸 Play Chord",
@@ -537,8 +541,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     let melodyBatch = null;
 
     function updateStartButton() {
-      startButton.textContent = game.mode === 'melody' && game.phase === 'result'
-        ? t(game.melodyIndex === 4 ? 'nextChord' : 'nextMelody') : t('startBtn');
+      startButton.textContent = game.phase === 'guess' ? t('skipBtn')
+        : game.mode === 'melody' && game.phase === 'result'
+          ? t(game.melodyIndex === 4 ? 'nextChord' : 'nextMelody') : t('startBtn');
     }
 
     // Degree motifs, their rotations and retrogrades provide varied contours.
@@ -597,20 +602,15 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       const batch = melodyBatch;
       const count = Math.random() < .5 ? 4 : 5;
       const stepwise = Math.random() < .1;
-      let candidates = melodyCandidates(batch.def, batch.rootMidi, count, stepwise)
-        .filter(sequence => !batch.used.has(sequence.map(p => p.midi).join(',')));
-      if (!candidates.length) candidates = melodyCandidates(batch.def, batch.rootMidi, count, false)
-        .filter(sequence => !batch.used.has(sequence.map(p => p.midi).join(',')));
-      if (!candidates.length) throw new Error('No playable melody candidates');
-      // Prefer non-root openings; reserve roughly 35% for root-free phrases.
-      // Compare pitch classes so octave-displaced roots count as roots too.
       const isRoot = position => position.midi % 12 === batch.rootPitchIndex;
-      const preference = Math.random();
-      const preferred = candidates.filter(sequence => preference < .35
-        ? !sequence.some(isRoot)
-        : preference < .45
-          ? isRoot(sequence[0])
-          : !isRoot(sequence[0]) && sequence.some(isRoot));
+      const eligible = sequence => !batch.used.has(sequence.map(p => p.midi).join(','))
+        && (difficulty().hard ? !sequence.some(isRoot) : sequence.some(isRoot));
+      let candidates = melodyCandidates(batch.def, batch.rootMidi, count, stepwise).filter(eligible);
+      if (!candidates.length) candidates = melodyCandidates(batch.def, batch.rootMidi, count, false).filter(eligible);
+      if (!candidates.length) throw new Error('No playable melody candidates');
+      // Keep root openings uncommon in EASY; HARD excludes every root pitch class.
+      const rootOpening = Math.random() < .1;
+      const preferred = candidates.filter(sequence => isRoot(sequence[0]) === rootOpening);
       const pool = preferred.length ? preferred : candidates;
       const sequence = pool[Math.floor(Math.random() * pool.length)];
       batch.used.add(sequence.map(p => p.midi).join(','));
@@ -638,25 +638,35 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     }
 
     function updateDeckCounterDisplay() {
-      deckCounter.style.display = 'inline-block';
-      if (questionTypeSelect.value === 'scale') {
-        const displayIndex = currentScaleIndex === 0 ? 1 : currentScaleIndex;
-        const totalScales = jazzScaleDefinitions.length * 2;
-        deckCounter.textContent = t('progressScale', displayIndex, totalScales);
-      } else if (questionTypeSelect.value === 'melody') {
-        const progress = game.mode === 'melody' && game.target.length ? t('melodyProgress', game.melodyIndex, game.target.length) + ' ｜ ' : '';
-        deckCounter.textContent = progress + t('progressChord', melodyCorrectCount, melodyQuestionCount);
-      } else {
-        deckCounter.textContent = t('progressChord', chordCorrectCount, chordQuestionCount);
-      }
+      const state = difficulty();
+      deckCounter.classList.toggle('hard-mode', state.hard);
+      deckCounter.textContent = state.hard
+        ? (appSettings.lang === 'on' ? '🔥 HARD MODE ACTIVE 🔥' : '🔥 HARD MODE 発動中 🔥')
+        : (appSettings.lang === 'on' ? `Correct streak: ${state.correct}/5` : `連続正解数：${state.correct}/5`) + '　 EASY MODE';
     }
 
     const x0 = 150, y0 = 56, boardWidth = 820, boardHeight = 220, frets = 15;
     let audioContext;
 
-    let tensionUnlocked = false;
-    let consecutiveCorrect = 0;
-    let consecutiveWrong = 0;
+    const difficultyStates = Object.fromEntries(['chord', 'scale', 'melody'].map(mode =>
+      [mode, { hard: false, correct: 0, wrong: 0 }]));
+    function difficulty() { return difficultyStates[questionTypeSelect.value]; }
+    function recordResult(correct) {
+      const state = difficulty();
+      if (correct) {
+        state.correct++;
+        state.wrong = 0;
+        if (state.correct >= 5) state.hard = true;
+      } else {
+        state.correct = 0;
+        state.wrong++;
+        if (state.hard && state.wrong >= 2) {
+          state.hard = false;
+          state.wrong = 0;
+        }
+      }
+      updateDeckCounterDisplay();
+    }
 
     let game = { 
       mode: 'chord',
@@ -672,17 +682,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     let rootMarkerGroup;
     const beatMs = 500;
 
-    function updateLevelIndicator() {
-      if (questionTypeSelect.value !== 'chord') {
-        levelIndicator.textContent = '';
-        return;
-      }
-      if (tensionUnlocked) {
-        levelIndicator.textContent = t('levelTension', consecutiveWrong);
-      } else {
-        levelIndicator.textContent = t('levelBasic', consecutiveCorrect);
-      }
-    }
+    function updateLevelIndicator() { levelIndicator.textContent = ''; }
 
     function updateSelectWidth(select) {
       const style = getComputedStyle(select);
@@ -1050,8 +1050,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
     function makeChordQuestion(count, isRootFirst) {
       let attempts = 0;
-      const availableDefs = tensionUnlocked 
-        ? [...basicChordDefinitions, ...tensionChordDefinitions]
+      const availableDefs = difficulty().hard 
+        ? tensionChordDefinitions
         : basicChordDefinitions;
 
       const firstCandidates = positions.filter(pos => pos.fret >= 1 && pos.fret <= 10);
@@ -1158,7 +1158,11 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
           resetScaleDeck();
         }
 
-        const item = scaleDeck.pop();
+        // Preserve unseen advanced patterns while EASY repeats the seven modes.
+        const eligibleIndex = scaleDeck.findIndex(item => difficulty().hard
+          || jazzScaleDefinitions.indexOf(item.scaleDef) < 7);
+        const item = eligibleIndex >= 0 ? scaleDeck.splice(eligibleIndex, 1)[0]
+          : { scaleDef: jazzScaleDefinitions[Math.floor(Math.random() * 7)], isDescending: Math.random() < .5 };
         currentScaleIndex++;
         updateDeckCounterDisplay();
 
@@ -1334,7 +1338,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         setStatus(null, msg);
       }
       playChordBtn.disabled = game.mode !== 'chord';
-      startButton.disabled = game.mode === 'melody' && game.phase === 'guess';
+      startButton.disabled = false;
+      updateStartButton();
       replayButton.disabled = false;
       questionTypeSelect.disabled = false;
       noteCountSelect.disabled = false;
@@ -1378,44 +1383,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
       targetTitle.textContent = game.titleName;
       
-      if (correct) {
-        if (isNewAnswer && game.mode === 'chord') {
-          if (!tensionUnlocked) {
-            consecutiveCorrect++;
-            if (consecutiveCorrect >= 5) {
-              tensionUnlocked = true;
-              consecutiveWrong = 0;
-              setStatus(null, t('tensionUnlockedMsg'), 'correct');
-            } else {
-              setStatus(null, t('correctStreakMsg', consecutiveCorrect), 'correct');
-            }
-          } else {
-            consecutiveWrong = 0;
-            setStatus(null, t('correctMsg'), 'correct');
-          }
-        } else {
-          setStatus(null, t('correctMsg'), 'correct');
-        }
-      } else {
-        if (isNewAnswer && game.mode === 'chord') {
-          if (tensionUnlocked) {
-            consecutiveWrong++;
-            if (consecutiveWrong >= 2) {
-              tensionUnlocked = false;
-              consecutiveCorrect = 0;
-              consecutiveWrong = 0;
-              setStatus(null, t('tensionDowngradeMsg'), 'wrong');
-            } else {
-              setStatus(null, t('wrongStreakMsg', consecutiveWrong), 'wrong');
-            }
-          } else {
-            consecutiveCorrect = 0;
-            setStatus(null, t('wrongMsg'), 'wrong');
-          }
-        } else {
-          setStatus(null, t('wrongMsg'), 'wrong');
-        }
-      }
+      if (isNewAnswer) recordResult(correct);
+      setStatus(null, t(correct ? 'correctMsg' : 'wrongMsg'), correct ? 'correct' : 'wrong');
 
       if (game.mode === 'chord') {
         playChordBtn.disabled = false;
