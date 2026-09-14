@@ -138,6 +138,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
             <select id="question-type">
               <option value="chord" selected>コード</option>
               <option value="scale">スケール</option>
+              <option value="melody">メロディ</option>
             </select>
           </div>
 
@@ -223,6 +224,10 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         qType: "問題:",
         optChord: "コード",
         optScale: "スケール",
+        optMelody: "メロディ",
+        nextMelody: "▶ 次のメロディ",
+        nextChord: "▶ 次のコード（4問）",
+        melodyProgress: (i, n) => `${i}/4問 · ${n}音`,
         noteCount: "音数:",
         opt2: "2音",
         opt3: "3音",
@@ -268,6 +273,10 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         qType: "Mode:",
         optChord: "Chord",
         optScale: "Scale",
+        optMelody: "Melody",
+        nextMelody: "▶ Next Melody",
+        nextChord: "▶ Next Chord (4 Questions)",
+        melodyProgress: (i, n) => `${i}/4 · ${n} notes`,
         noteCount: "Notes:",
         opt2: "2 Notes",
         opt3: "3 Notes",
@@ -340,6 +349,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       document.querySelector('#label-q-type').textContent = t('qType');
       questionTypeSelect.options[0].textContent = t('optChord');
       questionTypeSelect.options[1].textContent = t('optScale');
+      questionTypeSelect.options[2].textContent = t('optMelody');
       updateSelectWidth(questionTypeSelect);
 
       document.querySelector('#label-note-count').textContent = t('noteCount');
@@ -352,7 +362,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       document.querySelector('#first-note-root-btn').textContent = t('optRoot');
       document.querySelector('#first-note-random-btn').textContent = t('optRandom');
 
-      startButton.textContent = t('startBtn');
+      updateStartButton();
       if (game.phase === 'result') {
         replayButton.textContent = t('viewResultBtn');
       } else {
@@ -364,7 +374,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         setStatus(null, t('initialMsg'));
       }
 
-      if (questionTypeSelect.value === 'chord') {
+      if (questionTypeSelect.value !== 'scale') {
         targetLabel.textContent = t('chordTitleLabel');
       } else {
         targetLabel.textContent = t('scaleTitleLabel');
@@ -522,6 +532,96 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     let currentScaleIndex = 0;
     let chordQuestionCount = 0;
     let chordCorrectCount = 0;
+    let melodyQuestionCount = 0;
+    let melodyCorrectCount = 0;
+    let melodyBatch = null;
+
+    function updateStartButton() {
+      startButton.textContent = game.mode === 'melody' && game.phase === 'result'
+        ? t(game.melodyIndex === 4 ? 'nextChord' : 'nextMelody') : t('startBtn');
+    }
+
+    // Degree motifs, their rotations and retrogrades provide varied contours.
+    // The occasional flat ninth is a passing note, never an unsupported endpoint.
+    const melodyDefinitions = [
+      { name: '', intervals: [0, 4, 7], scale: [0, 2, 4, 5, 7, 9, 11], endpoints: [0, 2, 4, 7, 9, 11] },
+      { name: 'm', intervals: [0, 3, 7], scale: [0, 2, 3, 5, 7, 9, 10], endpoints: [0, 2, 3, 5, 7, 9, 10] },
+      { name: 'dim', intervals: [0, 3, 6], scale: [0, 2, 3, 5, 6, 8, 9, 11], endpoints: [0, 2, 3, 5, 6, 8, 9, 11] }
+    ];
+    const melodyMotifs = [
+      [1, 2, 4, 3], [1, 2, 3, 5], [1, 6, 2, 5], [3, 5, 2, 1],
+      [1, 3, 2, 5], [5, 3, 6, 2], [1, 5, 3, 2], [2, 5, 3, 1],
+      [1, 2, 4, 3, 5], [1, 6, 2, 5, 3], [3, 'b9', 1, 7, 6],
+      [5, 3, 2, 4, 1], [1, 3, 5, 2, 1], [3, 2, 5, 6, 1],
+      [3, 5, 2, 6], [2, 4, 3, 6],
+      [3, 5, 2, 6, 7], [2, 5, 3, 7, 6], [6, 3, 2, 5, 7]
+    ];
+
+    function melodyCandidates(def, rootMidi, count, stepwise) {
+      const degreeOffset = degree => degree === 'b9' ? 1
+        : def.scale[(degree - 1) % def.scale.length] + 12 * Math.floor((degree - 1) / def.scale.length);
+      const motifs = stepwise
+        ? Array.from({ length: def.scale.length }, (_, i) => Array.from({ length: count }, (_, j) => i + j + 1))
+        : melodyMotifs.filter(motif => motif.length === count);
+      const candidates = new Map();
+      for (const motif of motifs) {
+        for (let rotation = 0; rotation < (stepwise ? 1 : motif.length); rotation++) {
+          const rotated = motif.slice(rotation).concat(motif.slice(0, rotation));
+          for (const degrees of [rotated, [...rotated].reverse()]) {
+            const offsets = degrees.map(degreeOffset);
+            if (![offsets[0], offsets.at(-1)].every(n => def.endpoints.includes(n % 12))) continue;
+            const midis = offsets.map(n => rootMidi + n);
+            // Keep the entire phrase in a compact, playable region of the board.
+            for (let anchor = 1; anchor <= 11; anchor++) {
+              const sequence = midis.map(midi => positions.find(p => p.midi === midi && p.fret >= anchor && p.fret <= anchor + 4));
+              if (sequence.every(Boolean)) {
+                candidates.set(midis.join(','), sequence);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return [...candidates.values()];
+    }
+
+    function makeMelodyQuestion() {
+      if (!melodyBatch || melodyBatch.index >= 4) {
+        const roll = Math.random();
+        const def = melodyDefinitions[roll < .45 ? 0 : roll < .9 ? 1 : 2];
+        const rootPitchIndex = Math.floor(Math.random() * 12);
+        // All twelve keys fit between G3 and F-sharp4 in the app's register.
+        const rootMidi = 55 + (rootPitchIndex - 7 + 12) % 12;
+        melodyBatch = { def, rootMidi, rootPitchIndex, index: 0, used: new Set() };
+      }
+      const batch = melodyBatch;
+      const count = Math.random() < .5 ? 4 : 5;
+      const stepwise = Math.random() < .1;
+      let candidates = melodyCandidates(batch.def, batch.rootMidi, count, stepwise)
+        .filter(sequence => !batch.used.has(sequence.map(p => p.midi).join(',')));
+      if (!candidates.length) candidates = melodyCandidates(batch.def, batch.rootMidi, count, false)
+        .filter(sequence => !batch.used.has(sequence.map(p => p.midi).join(',')));
+      if (!candidates.length) throw new Error('No playable melody candidates');
+      // Prefer non-root openings; reserve roughly 35% for root-free phrases.
+      // Compare pitch classes so octave-displaced roots count as roots too.
+      const isRoot = position => position.midi % 12 === batch.rootPitchIndex;
+      const preference = Math.random();
+      const preferred = candidates.filter(sequence => preference < .35
+        ? !sequence.some(isRoot)
+        : preference < .45
+          ? isRoot(sequence[0])
+          : !isRoot(sequence[0]) && sequence.some(isRoot));
+      const pool = preferred.length ? preferred : candidates;
+      const sequence = pool[Math.floor(Math.random() * pool.length)];
+      batch.used.add(sequence.map(p => p.midi).join(','));
+      batch.index++;
+      return {
+        sequence, titleName: pitchNames[batch.rootPitchIndex] + batch.def.name,
+        rootPitchIndex: batch.rootPitchIndex,
+        chordMidiNotes: batch.def.intervals.map(n => batch.rootMidi + n),
+        melodyIndex: batch.index
+      };
+    }
 
     function resetScaleDeck() {
       scaleDeck = [];
@@ -543,6 +643,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         const displayIndex = currentScaleIndex === 0 ? 1 : currentScaleIndex;
         const totalScales = jazzScaleDefinitions.length * 2;
         deckCounter.textContent = t('progressScale', displayIndex, totalScales);
+      } else if (questionTypeSelect.value === 'melody') {
+        const progress = game.mode === 'melody' && game.target.length ? t('melodyProgress', game.melodyIndex, game.target.length) + ' ｜ ' : '';
+        deckCounter.textContent = progress + t('progressChord', melodyCorrectCount, melodyQuestionCount);
       } else {
         deckCounter.textContent = t('progressChord', chordCorrectCount, chordQuestionCount);
       }
@@ -570,7 +673,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     const beatMs = 500;
 
     function updateLevelIndicator() {
-      if (questionTypeSelect.value === 'scale') {
+      if (questionTypeSelect.value !== 'chord') {
         levelIndicator.textContent = '';
         return;
       }
@@ -601,7 +704,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       updateSelectWidth(questionTypeSelect);
       updateSelectWidth(noteCountSelect);
       const mode = questionTypeSelect.value;
-      playChordBtn.hidden = mode === 'scale';
+      playChordBtn.hidden = mode !== 'chord';
       if (mode === 'chord') {
         noteCountGroup.style.display = 'flex';
         firstNoteGroup.style.display = 'block';
@@ -610,7 +713,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       } else {
         noteCountGroup.style.display = 'none';
         firstNoteGroup.style.display = 'none';
-        targetLabel.textContent = t('scaleTitleLabel');
+        targetLabel.textContent = t(mode === 'melody' ? 'chordTitleLabel' : 'scaleTitleLabel');
         targetTitle.textContent = '---';
       }
       updateLevelIndicator();
@@ -621,12 +724,18 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
     questionTypeSelect.addEventListener('change', () => {
       clearBoardMarks();
+      clearTimeout(judgmentTimer);
+      melodyBatch = null;
+      melodyQuestionCount = melodyCorrectCount = 0;
+      startButton.disabled = false;
       chordQuestionCount = 0;
       chordCorrectCount = 0;
       replayButton.disabled = true;
       game.phase = 'idle';
       game.target = [];
       game.answers = [];
+      updateStartButton();
+      replayButton.textContent = t('replayBtn');
       targetTitle.textContent = '---';
       setStatus(null, t('initialMsg'));
       updateUIControls();
@@ -634,7 +743,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
     function setStatus(titleText, msgText, state = 'normal') {
       if (titleText !== null) targetTitle.textContent = titleText;
-      statusMessage.textContent = state === 'correct' ? t('correctMsg') : state === 'wrong' ? t('wrongMsg') : '';
+      statusMessage.textContent = state === 'correct' ? t('correctMsg') : state === 'wrong' ? t('wrongMsg') : (msgText === t('chordPlaying') ? msgText : '');
       
       statusBox.classList.remove('status-correct', 'status-wrong');
       if (state === 'correct') statusBox.classList.add('status-correct');
@@ -672,7 +781,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       activeVoices.forEach(stop => stop());
       clearBoardMarks();
       game.phase = 'idle';
+      melodyBatch = null;
       game.answers = [];
+      updateStartButton();
       startButton.disabled = false;
       replayButton.disabled = true;
       replayButton.textContent = t('replayBtn');
@@ -1126,7 +1237,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       return candidates[0];
     }
 
-    async function playQuestion() {
+    async function playQuestion(includeMelodyChord = false) {
       if (!game.target.length) return;
       playChordBtn.disabled = true;
       startButton.disabled = replayButton.disabled = true;
@@ -1143,8 +1254,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
       const isShowingResult = (previousPhase === 'result');
       const total = game.target.length;
+      if (game.mode === 'melody') highlightRootNotes(game.rootPitchIndex);
 
-      const displayTitle = (game.mode === 'chord' || isShowingResult) ? game.titleName : game.displayKey;
+      const displayTitle = (game.mode !== 'scale' || isShowingResult) ? game.titleName : game.displayKey;
       targetTitle.textContent = displayTitle;
 
       positions.forEach(p => p.cell.classList.remove('selected', 'correct', 'wrong', 'playing-correct', 'playing-wrong', 'computer-first'));
@@ -1153,7 +1265,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         game.target[0].cell.classList.add('computer-first');
       }
 
-      if (game.mode === 'chord' && !isShowingResult) {
+      if ((game.mode === 'chord' || (game.mode === 'melody' && includeMelodyChord)) && !isShowingResult) {
         highlightRootNotes(game.rootPitchIndex);
         setStatus(null, t('chordPlaying'));
         playChord(game.chordMidiNotes);
@@ -1223,7 +1335,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         setStatus(null, msg);
       }
       playChordBtn.disabled = game.mode !== 'chord';
-      startButton.disabled = false;
+      startButton.disabled = game.mode === 'melody' && game.phase === 'guess';
       replayButton.disabled = false;
       questionTypeSelect.disabled = false;
       noteCountSelect.disabled = false;
@@ -1231,7 +1343,13 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     }
 
     function showResult(isNewAnswer = true) {
-      const correct = game.answers.every((ans, idx) => ans.midi === game.target[idx].midi);
+      const correct = game.answers.length === game.target.length && game.answers.every((ans, idx) => ans.midi === game.target[idx].midi);
+
+      if (isNewAnswer && game.mode === 'melody') {
+        melodyQuestionCount++;
+        if (correct) melodyCorrectCount++;
+        updateDeckCounterDisplay();
+      }
 
       if (isNewAnswer) {
         clearTimeout(judgmentTimer);
@@ -1308,6 +1426,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       }
       
       game.phase = 'result';
+      startButton.disabled = false;
+      updateStartButton();
       replayButton.textContent = t('viewResultBtn');
       replayButton.disabled = false;
     }
@@ -1380,6 +1500,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         const count = parseInt(noteCountSelect.value, 10);
         const isRootFirst = appSettings.firstNote === 'root';
         q = makeChordQuestion(count, isRootFirst);
+      } else if (mode === 'melody') {
+        targetLabel.textContent = t('chordTitleLabel');
+        q = makeMelodyQuestion();
       } else {
         targetLabel.textContent = t('scaleTitleLabel');
         q = makeScaleQuestion();
@@ -1393,12 +1516,15 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         titleName: q.titleName, 
         displayKey: q.displayKey,
         rootPitchIndex: q.rootPitchIndex,
-        chordMidiNotes: q.chordMidiNotes
+        chordMidiNotes: q.chordMidiNotes,
+        melodyIndex: q.melodyIndex
       };
 
-      targetTitle.textContent = mode === 'chord' ? q.titleName : q.displayKey;
+      targetTitle.textContent = mode !== 'scale' ? q.titleName : q.displayKey;
+      updateDeckCounterDisplay();
+      updateStartButton();
       centerPosition(game.target[0]);
-      await playQuestion();
+      await playQuestion(mode === 'melody' && q.melodyIndex === 1);
     }
 
     startButton.addEventListener('click', () => runPlayback(startGame));
