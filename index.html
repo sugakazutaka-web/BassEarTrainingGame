@@ -248,7 +248,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         progressScale: (idx, total) => `進捗: ${idx}/${total}`,
         progressChord: (corr, total) => `正解数: ${corr}/${total}`,
         chordPlaying: "和音を再生中…",
-        scalePlaying: (name) => `キー音 (${name}) を再生中…`,
+        scalePlaying: "キー音再生中・・・",
         firstNoteGuessPrompt: "1音目の音: フレットボードから音を選んでください",
         listenCarefully: (i, total) => `よく聴いてください… (${i} / ${total}音目)`,
         guessNextPrompt: (curr, total) => `次の音をクリックしてください（${curr} / ${total}）`,
@@ -297,7 +297,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         progressScale: (idx, total) => `Progress: ${idx}/${total}`,
         progressChord: (corr, total) => `Correct: ${corr}/${total}`,
         chordPlaying: "Playing chord...",
-        scalePlaying: (name) => `Playing key note (${name})...`,
+        scalePlaying: "Playing key note...",
         firstNoteGuessPrompt: "1st Note: Select a note from the fretboard",
         listenCarefully: (i, total) => `Listen carefully... (${i} / ${total})`,
         guessNextPrompt: (curr, total) => `Click the next note (${curr} / ${total})`,
@@ -743,7 +743,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 
     function setStatus(titleText, msgText, state = 'normal') {
       if (titleText !== null) targetTitle.textContent = titleText;
-      statusMessage.textContent = state === 'correct' ? t('correctMsg') : state === 'wrong' ? t('wrongMsg') : (msgText === t('chordPlaying') ? msgText : '');
+      statusMessage.textContent = state === 'correct' ? t('correctMsg') : state === 'wrong' ? t('wrongMsg') : ([t('chordPlaying'), t('scalePlaying')].includes(msgText) ? msgText : '');
       
       statusBox.classList.remove('status-correct', 'status-wrong');
       if (state === 'correct') statusBox.classList.add('status-correct');
@@ -1237,7 +1237,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       return candidates[0];
     }
 
-    async function playQuestion(includeMelodyChord = false) {
+    async function playQuestion(includeMelodyChord = false, includeScaleKey = false) {
       if (!game.target.length) return;
       playChordBtn.disabled = true;
       startButton.disabled = replayButton.disabled = true;
@@ -1270,13 +1270,12 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         setStatus(null, t('chordPlaying'));
         playChord(game.chordMidiNotes);
         await wait(getAdjustedTime(1500));
-      } else if (game.mode === 'scale' && !isShowingResult) {
+      } else if (game.mode === 'scale' && includeScaleKey && !isShowingResult) {
         highlightRootNotes(game.rootPitchIndex);
-        const rootPitchName = pitchNames[game.rootPitchIndex];
-        setStatus(null, t('scalePlaying', rootPitchName));
+        setStatus(null, t('scalePlaying'));
         const firstNoteMidi = game.target[0].midi;
         play(firstNoteMidi, getAdjustedTime(1.05), 0.4);
-        await wait(getAdjustedTime(1200));
+        await wait(getAdjustedTime(1450));
       }
 
       for (let i = 0; i < total; i++) {
@@ -1524,7 +1523,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       updateDeckCounterDisplay();
       updateStartButton();
       centerPosition(game.target[0]);
-      await playQuestion(mode === 'melody' && q.melodyIndex === 1);
+      await playQuestion(mode === 'melody' && q.melodyIndex === 1, mode === 'scale');
     }
 
     startButton.addEventListener('click', () => runPlayback(startGame));
