@@ -59,8 +59,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .setting-opt-btn.active { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#302318; box-shadow:none; }
 .board-shell { width:100%; overflow-x:auto; overflow-y:hidden; border-radius:14px; background:#251d17; overscroll-behavior-x:contain; touch-action:none; scrollbar-width:none; }
 .board-shell::-webkit-scrollbar { display:none; width:0; height:0; }
-.board-track { display:flex; width:calc(900px - var(--board-crop) + var(--board-gutter,0px)); }
-.board-track::after { content:""; flex:0 0 var(--board-gutter,0px); }
+.board-track { display:flex; width:calc(900px - var(--board-crop)); }
 .board-crop { flex:0 0 calc(900px - var(--board-crop)); width:calc(900px - var(--board-crop)); height:206px; overflow:hidden; }
 #fretboard { display:block; margin-top:-44px; margin-left:calc(0px - var(--board-crop)); width:900px; height:300px; background:#372018; }
 .board-shell,.board-shell * { touch-action:none; -webkit-touch-callout:none!important; -webkit-user-select:none!important; user-select:none!important; -webkit-user-drag:none; }
@@ -1580,8 +1579,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     }
     function centerPosition(position) {
       if (!position) return;
-      const gutter = boardShell.clientWidth / 2;
-      boardShell.style.setProperty('--board-gutter', `${gutter}px`);
+      const viewportHalfWidth = boardShell.clientWidth / 2;
       let center = position;
       if (game.mode === 'scale') {
         const offset = ['G', 'D'].includes(position.string.name) ? -1 : 1;
@@ -1589,7 +1587,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         center = positions.find(p => p.string === position.string && p.fret === adjacentFret) || position;
       }
       // The left SVG margin is physically clipped; scrolling stops at the board edge.
-      const left = (center.cx - 44) * 900 / 1020 - gutter;
+      const left = (center.cx - 44) * 900 / 1020 - viewportHalfWidth;
       setBoardScroll(game.mode === 'chord' && position.fret <= 2 ? 0 : left);
     }
     function pressPosition(position) {
@@ -1661,12 +1659,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         activeVoices.forEach(stop => stop());
       }
     });
-    // Preserve the user's scroll position; center only when starting a game.
-    function updateBoardGutter() {
-      boardShell.style.setProperty('--board-gutter', `${boardShell.clientWidth / 2}px`);
-    }
-    window.addEventListener('resize', updateBoardGutter);
-    updateBoardGutter();
+    // Keep scrolling within the actual board after a viewport resize.
+    window.addEventListener('resize', () => setBoardScroll(boardShell.scrollLeft));
     document.addEventListener('keydown', event => { if (event.key === 'Escape') settingsPopup.classList.remove('active'); });
 
     updateUIControls();
