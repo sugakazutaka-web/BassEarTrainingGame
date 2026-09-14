@@ -69,9 +69,9 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .hint { margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; font-size:12px; color:#b7ac9c; }
 #deck-counter { color:#efd29a; font-size:20px; line-height:1.5; font-weight:750; border:1px solid var(--accent-border); border-radius:10px; padding:6px 12px; background:#28221c; }
 .board-navigation { padding:4px 0 0; }
-.scroll-pad { min-height:48px; padding:8px 12px; gap:10px; display:flex; align-items:center; justify-content:center; border:1px solid #494038; border-radius:10px; background:#24201b; color:#b7ac9c; font-size:12px; cursor:grab; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+.scroll-pad { min-height:48px; padding:8px 12px; gap:10px; display:flex; align-items:center; justify-content:center; border:1px solid #494038; border-radius:10px; background:#24201b; color:#c4b9a9; font-size:14px; font-weight:500; cursor:grab; touch-action:none; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
 .scroll-pad:active { cursor:grabbing; background:#342c23; }
-.scroll-arrow { font-size:24px; line-height:1; color:var(--orange); flex-shrink:0; }
+.scroll-arrow { font-size:28px; line-height:1; color:var(--orange); flex-shrink:0; }
 .scroll-pad:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
 @media(min-width:700px) { .action-row { max-width:520px; } }
 @media(max-width:360px) { .settings-row { gap:4px; } .action-row button { font-size:13px; padding:9px 4px; } }
@@ -174,7 +174,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         <svg id="fretboard" viewBox="0 0 1020 340" role="application" aria-label="4弦エレクトリックベースのフレットボード"></svg>
       </div></div></div>
       <div class="board-navigation">
-        <div id="scroll-pad" class="scroll-pad" tabindex="0" role="group" aria-label="指板の横スクロール"><span class="scroll-arrow" aria-hidden="true">↔</span><span id="scroll-description">ここを左右にスワイプ・ドラッグして指板を移動</span></div>
+        <div id="scroll-pad" class="scroll-pad" tabindex="0" role="group" aria-label="指板の横スクロール"><span class="scroll-arrow" aria-hidden="true">↔</span><span id="scroll-description">指板の左右移動はここをスワイプ</span></div>
       </div>
       <div id="level-indicator" hidden></div>
       <div class="hint">
@@ -331,7 +331,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     }
 
     function updateStaticTexts() {
-      document.querySelector('#scroll-description').textContent = appSettings.lang === 'on' ? 'Swipe or drag here to move the fretboard' : 'ここを左右にスワイプ・ドラッグして指板を移動';
+      document.querySelector('#scroll-description').textContent = appSettings.lang === 'on' ? 'Swipe here to move the fretboard left or right' : '指板の左右移動はここをスワイプ';
       document.querySelector('#scroll-pad').setAttribute('aria-label', appSettings.lang === 'on' ? 'Scroll fretboard horizontally' : '指板の横スクロール');
       document.documentElement.lang = appSettings.lang === 'on' ? 'en' : 'ja';
       document.querySelector('#modal-title-settings').textContent = t('settings');
