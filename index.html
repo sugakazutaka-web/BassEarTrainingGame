@@ -27,7 +27,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
 .status-label { font-size:10px; letter-spacing:.12em; color:#b7a590; }
 #target-title { font-size:21px; font-weight:800; color:var(--orange); overflow-wrap:anywhere; }
 .small-btn { font-size:13px; flex-shrink:0; }
-#play-chord-arpeggio { background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#17110a; }
+#play-chord-arpeggio { min-height:36px; height:36px; padding:5px 10px; line-height:24px; white-space:nowrap; background:linear-gradient(180deg,#ecd0ab,#dfba8e); border-color:#e5c39a; color:#17110a; }
 #level-indicator { font-size:15px; white-space:pre-line; margin-top:10px; color:#b7ac9c; line-height:1.5; }
 #status-box { min-height:52px; margin:0; padding:8px 12px; border:2px solid #494038; border-radius:14px; background:#24201b; display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:800; }
 #status-box.status-correct { color:#99e6ad; border-color:#99e6ad; background:#213428; }
@@ -540,9 +540,11 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     let melodyBatch = null;
 
     function updateStartButton() {
-      startButton.textContent = game.phase === 'guess' ? t('skipBtn')
-        : game.mode === 'melody' && game.phase === 'result'
-          ? t(game.melodyIndex === 4 ? 'nextChord' : 'nextMelody') : t('startBtn');
+      startButton.textContent = game.phase === 'guess' ? t('skipBtn') : t('startBtn');
+    }
+
+    function questionTitle() {
+      return game.mode === 'melody' ? `${game.titleName} (${game.melodyIndex}/4)` : game.titleName;
     }
 
     // Degree motifs, their rotations and retrogrades provide varied contours.
@@ -703,7 +705,8 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       updateSelectWidth(questionTypeSelect);
       updateSelectWidth(noteCountSelect);
       const mode = questionTypeSelect.value;
-      playChordBtn.hidden = mode !== 'chord';
+      playChordBtn.hidden = mode === 'scale';
+      playChordBtn.disabled = game.phase === 'idle' || mode === 'scale';
       if (mode === 'chord') {
         noteCountGroup.style.display = 'flex';
         firstNoteGroup.style.display = 'block';
@@ -940,7 +943,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
     }
 
     async function playChordArpeggio() {
-      if (game.phase === 'playing') return;
+      if (!['guess', 'result'].includes(game.phase) || game.mode === 'scale') return;
       if (!game.chordMidiNotes || game.chordMidiNotes.length === 0) return;
       playChordBtn.disabled = true;
       startButton.disabled = replayButton.disabled = true;
@@ -1267,7 +1270,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
       const total = game.target.length;
       if (game.mode === 'melody') highlightRootNotes(game.rootPitchIndex);
 
-      const displayTitle = (game.mode !== 'scale' || isShowingResult) ? game.titleName : game.displayKey;
+      const displayTitle = (game.mode !== 'scale' || isShowingResult) ? questionTitle() : game.displayKey;
       targetTitle.textContent = displayTitle;
 
       positions.forEach(p => p.cell.classList.remove('selected', 'correct', 'wrong', 'playing-correct', 'playing-wrong', 'computer-first'));
@@ -1344,7 +1347,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
           : t('guessFirstPrompt', total);
         setStatus(null, msg);
       }
-      playChordBtn.disabled = game.mode !== 'chord';
+      playChordBtn.disabled = game.mode === 'scale';
       startButton.disabled = false;
       updateStartButton();
       replayButton.disabled = false;
@@ -1388,12 +1391,12 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         }
       });
 
-      targetTitle.textContent = game.titleName;
+      targetTitle.textContent = questionTitle();
       
       if (isNewAnswer) recordResult(correct);
       setStatus(null, t(correct ? 'correctMsg' : 'wrongMsg'), correct ? 'correct' : 'wrong');
 
-      if (game.mode === 'chord') {
+      if (game.mode === 'chord' || game.mode === 'melody') {
         playChordBtn.disabled = false;
         updateLevelIndicator();
       } else {
@@ -1495,7 +1498,7 @@ select { border-width:2px; background:#28231e; color:var(--orange); border-color
         melodyIndex: q.melodyIndex
       };
 
-      targetTitle.textContent = mode !== 'scale' ? q.titleName : q.displayKey;
+      targetTitle.textContent = mode !== 'scale' ? questionTitle() : q.displayKey;
       updateDeckCounterDisplay();
       updateStartButton();
       centerPosition(game.target[0]);
